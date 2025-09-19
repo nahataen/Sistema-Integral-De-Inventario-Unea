@@ -1,13 +1,10 @@
-import React from "react";
+
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../App.css";
 
 
-type DatabaseDashboardProps = {
-  isDarkMode: boolean;
-  toggleTheme: () => void;
-};
+
 
 const DatabaseDashboard = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
