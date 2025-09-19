@@ -1,15 +1,47 @@
-# React + TypeScript + Vite
+# ⚡ React + TypeScript + Vite
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Este proyecto está configurado con **React + TypeScript + Vite**, ofreciendo un entorno rápido, moderno y flexible para el desarrollo frontend.  
+Incluye soporte para **HMR (Hot Module Replacement)** y reglas de **ESLint** para mantener un código limpio y consistente.  
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🚀 Tecnologías principales
 
-## Expanding the ESLint configuration
+- ⚛️ [React](https://react.dev/) – Librería para interfaces de usuario.  
+- 🌀 [Vite](https://vitejs.dev/) – Bundler ultrarrápido para desarrollo.  
+- 🟦 [TypeScript](https://www.typescriptlang.org/) – Tipado estático para JavaScript.  
+- 🔍 [ESLint](https://eslint.org/) – Reglas y análisis de calidad de código.  
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+---
+
+## 📦 Plugins oficiales disponibles
+
+- [`@vitejs/plugin-react`](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) → usa **Babel** para Fast Refresh.  
+- [`@vitejs/plugin-react-swc`](https://github.com/vitejs/vite-plugin-react-swc) → usa **SWC** para Fast Refresh.  
+
+---
+
+## 🛠️ Instalación y ejecución
+
+```bash
+# Instalar dependencias
+npm install
+
+# Servidor de desarrollo
+npm run dev
+
+# Compilar para producción
+npm run build
+
+# Vista previa de producción
+npm run preview
+```
+
+---
+
+## 🔧 Configuración de ESLint
+
+Si deseas habilitar reglas más estrictas y con soporte de tipado, actualiza tu configuración con:
 
 ```js
 export default defineConfig([
@@ -17,29 +49,29 @@ export default defineConfig([
   {
     files: ['**/*.{ts,tsx}'],
     extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
       tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
+      // Opción más estricta:
       tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
+      // Reglas de estilo:
       tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
     ],
     languageOptions: {
       parserOptions: {
         project: ['./tsconfig.node.json', './tsconfig.app.json'],
         tsconfigRootDir: import.meta.dirname,
       },
-      // other options...
     },
   },
 ])
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+También puedes instalar plugins adicionales para reglas específicas de React:  
+
+```bash
+npm install eslint-plugin-react-x eslint-plugin-react-dom --save-dev
+```
+
+Configuración sugerida:
 
 ```js
 // eslint.config.js
@@ -51,10 +83,7 @@ export default defineConfig([
   {
     files: ['**/*.{ts,tsx}'],
     extends: [
-      // Other configs...
-      // Enable lint rules for React
       reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
       reactDom.configs.recommended,
     ],
     languageOptions: {
@@ -62,8 +91,40 @@ export default defineConfig([
         project: ['./tsconfig.node.json', './tsconfig.app.json'],
         tsconfigRootDir: import.meta.dirname,
       },
-      // other options...
     },
   },
 ])
 ```
+
+---
+
+## 📂 Estructura del proyecto
+
+```
+├── src/
+│   ├── assets/        # Imágenes y recursos estáticos
+│   ├── components/    # Componentes reutilizables
+│   ├── pages/         # Vistas/páginas principales
+│   ├── App.tsx        # Componente raíz
+│   └── main.tsx       # Punto de entrada
+├── public/            # Archivos estáticos
+├── tsconfig.json      # Configuración TypeScript
+├── vite.config.ts     # Configuración Vite
+└── eslint.config.js   # Configuración ESLint
+```
+
+---
+
+## ✨ Características
+
+✔️ Configuración mínima pero lista para producción.  
+✔️ Hot Reloading instantáneo.  
+✔️ Compatible con ESLint + TypeScript.  
+✔️ Preparado para proyectos escalables.  
+
+---
+
+## 📜 Licencia
+
+Este proyecto se distribuye bajo la licencia **MIT**.  
+¡Siéntete libre de usarlo, mejorarlo y compartirlo! 🚀
