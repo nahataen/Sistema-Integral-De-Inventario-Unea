@@ -4,7 +4,7 @@
 
 
 Aplicación **multiplataforma** (Windows y macOS) desarrollada con **Tauri**, **React**, **Vite**, **TailwindCSS** y **SQLite**.  
-El sistema permite administrar múltiples bases de datos de inventario de manera local, sin depender de internet.  
+El sistema permite administrar múltiples bases de datos de inventario de manera local, sin depender de internet a requerimientos de la institución.  
 
 ---
 
