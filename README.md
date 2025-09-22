@@ -1,4 +1,7 @@
-# 📦 Sistema de Almacén UNEA
+# Sistema de Almacén UNEA
+
+![UNEA Logo](https://www.unea.edu.mx/hubfs/Flujo%20Ingenier%C3%ADa%20Industrial%202022%20Marzo/Logos%20Marcas/logos%202024/unea.svg)
+
 
 Aplicación **multiplataforma** (Windows y macOS) desarrollada con **Tauri**, **React**, **Vite**, **TailwindCSS** y **SQLite**.  
 El sistema permite administrar múltiples bases de datos de inventario de manera local, sin depender de internet.  
