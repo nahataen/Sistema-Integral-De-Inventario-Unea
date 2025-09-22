@@ -1,130 +1,44 @@
-# ⚡ React + TypeScript + Vite
+# 📦 Sistema de Almacén UNEA
 
-Este proyecto está configurado con **React + TypeScript + Vite**, ofreciendo un entorno rápido, moderno y flexible para el desarrollo frontend.  
-Incluye soporte para **HMR (Hot Module Replacement)** y reglas de **ESLint** para mantener un código limpio y consistente.  
-
----
-
-## 🚀 Tecnologías principales
-
-- ⚛️ [React](https://react.dev/) – Librería para interfaces de usuario.  
-- 🌀 [Vite](https://vitejs.dev/) – Bundler ultrarrápido para desarrollo.  
-- 🟦 [TypeScript](https://www.typescriptlang.org/) – Tipado estático para JavaScript.  
-- 🔍 [ESLint](https://eslint.org/) – Reglas y análisis de calidad de código.  
+Aplicación **multiplataforma** (Windows y macOS) desarrollada con **Tauri**, **React**, **Vite**, **TailwindCSS** y **SQLite**.  
+El sistema permite administrar múltiples bases de datos de inventario de manera local, sin depender de internet.  
 
 ---
 
-## 📦 Plugins oficiales disponibles
+## 🚀 Características principales
 
-- [`@vitejs/plugin-react`](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) → usa **Babel** para Fast Refresh.  
-- [`@vitejs/plugin-react-swc`](https://github.com/vitejs/vite-plugin-react-swc) → usa **SWC** para Fast Refresh.  
-
----
-
-## 🛠️ Instalación y ejecución
-
-```bash
-# Instalar dependencias
-npm install
-
-# Servidor de desarrollo
-npm run dev
-
-# Compilar para producción
-npm run build
-
-# Vista previa de producción
-npm run preview
-```
+- 🔍 **Gestión de bases de datos SQLite**: importar, exportar, eliminar y listar.  
+- 🎨 **Modo oscuro/claro** con persistencia en `localStorage`.  
+- 📂 **Compatibilidad multiplataforma** gracias a `@tauri-apps/api/path` (`appDir`) para rutas dinámicas seguras.  
+- 🔑 **Protección al eliminar bases de datos** con confirmación y contraseña.  
+- ⚡ **Desarrollo rápido** con **Vite** como bundler.  
+- 📊 **Interfaz moderna** con **React + TailwindCSS**.  
+- 🖥️ **Optimizado para escritorio** con **Tauri** (menor consumo de recursos que Electron).  
 
 ---
 
-## 🔧 Configuración de ESLint
+## 🛠️ Tecnologías utilizadas
 
-Si deseas habilitar reglas más estrictas y con soporte de tipado, actualiza tu configuración con:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      tseslint.configs.recommendedTypeChecked,
-      // Opción más estricta:
-      tseslint.configs.strictTypeChecked,
-      // Reglas de estilo:
-      tseslint.configs.stylisticTypeChecked,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-    },
-  },
-])
-```
-
-También puedes instalar plugins adicionales para reglas específicas de React:  
-
-```bash
-npm install eslint-plugin-react-x eslint-plugin-react-dom --save-dev
-```
-
-Configuración sugerida:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      reactX.configs['recommended-typescript'],
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-    },
-  },
-])
-```
+- [Tauri](https://tauri.app/) → empaquetado multiplataforma.  
+- [React](https://react.dev/) → interfaz de usuario.  
+- [Vite](https://vitejs.dev/) → bundler y servidor de desarrollo ultrarrápido.  
+- [TailwindCSS](https://tailwindcss.com/) → estilos rápidos y modernos.  
+- [SQLite](https://www.sqlite.org/) → almacenamiento local de datos.  
+- [TypeScript](https://www.typescriptlang.org/) → tipado seguro y mantenimiento.  
 
 ---
 
 ## 📂 Estructura del proyecto
 
-```
+```bash
 ├── src/
-│   ├── assets/        # Imágenes y recursos estáticos
-│   ├── components/    # Componentes reutilizables
-│   ├── pages/         # Vistas/páginas principales
-│   ├── App.tsx        # Componente raíz
-│   └── main.tsx       # Punto de entrada
-├── public/            # Archivos estáticos
-├── tsconfig.json      # Configuración TypeScript
-├── vite.config.ts     # Configuración Vite
-└── eslint.config.js   # Configuración ESLint
-```
-
----
-
-## ✨ Características
-
-✔️ Configuración mínima pero lista para producción.  
-✔️ Hot Reloading instantáneo.  
-✔️ Compatible con ESLint + TypeScript.  
-✔️ Preparado para proyectos escalables.  
-
----
-
-## 📜 Licencia
-
-Este proyecto se distribuye bajo la licencia **MIT**.  
-¡Siéntete libre de usarlo, mejorarlo y compartirlo! 🚀
+│   ├── components/       # Componentes de React
+│   ├── pages/            # Vistas principales
+│   ├── utils/            # Funciones auxiliares
+│   ├── App.tsx           # Punto de entrada de la interfaz
+│   └── main.tsx          # Configuración inicial
+├── public/               # Archivos estáticos
+├── tauri/                # Configuración del backend de Tauri
+├── index.html            # Archivo HTML principal
+├── package.json          # Dependencias del frontend
+└── vite.config.ts        # Configuración de Vite
