@@ -3323,6 +3323,27 @@
       "children": [
         "c:\\Users\\nahat\\Desktop\\Sistema-Almacen-Unea\\sistema-almacen-unea\\src\\assets\\react.svg"
       ]
+    },
+    {
+      "path": "c:\\Users\\nahat\\Desktop\\Sistema-Almacen-Unea\\sistema-almacen-unea\\src\\hooks",
+      "name": "hooks",
+      "type": "folder",
+      "workspaceFolder": "c:\\Users\\nahat\\Desktop\\Sistema-Almacen-Unea\\sistema-almacen-unea",
+      "children": []
+    },
+    {
+      "path": "c:\\Users\\nahat\\Desktop\\Sistema-Almacen-Unea\\sistema-almacen-unea\\src\\services",
+      "name": "services",
+      "type": "folder",
+      "workspaceFolder": "c:\\Users\\nahat\\Desktop\\Sistema-Almacen-Unea\\sistema-almacen-unea",
+      "children": []
+    },
+    {
+      "path": "c:\\Users\\nahat\\Desktop\\Sistema-Almacen-Unea\\sistema-almacen-unea\\src\\utils",
+      "name": "utils",
+      "type": "folder",
+      "workspaceFolder": "c:\\Users\\nahat\\Desktop\\Sistema-Almacen-Unea\\sistema-almacen-unea",
+      "children": []
     }
   ]
 }

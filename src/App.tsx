@@ -1,16 +1,16 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import DatabaseDashboard from "./pages/DatabaseDashboard";
 import Configuracion from "./pages/Configuracion";
+import Pagina from "./pages/pagina";
 
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<DatabaseDashboard />} />
-        <Route path="/configuracion" element={<Configuracion />} />
-      </Routes>
-    </BrowserRouter>
+    <Routes>
+      <Route path="/" element={<DatabaseDashboard />} />
+      <Route path="/configuracion" element={<Configuracion />} />
+      <Route path="/pagina" element={<Pagina />} />
+    </Routes>
   );
 }
 
