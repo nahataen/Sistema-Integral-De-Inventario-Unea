@@ -1,69 +1,47 @@
-# React + TypeScript + Vite
+# Sistema de Almacén UNEA
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+![UNEA Logo](https://www.unea.edu.mx/hubfs/Flujo%20Ingenier%C3%ADa%20Industrial%202022%20Marzo/Logos%20Marcas/logos%202024/unea.svg)
 
-Currently, two official plugins are available:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Aplicación **multiplataforma** (Windows y macOS) desarrollada con **Tauri**, **React**, **Vite**, **TailwindCSS** y **SQLite**.  
+El sistema permite administrar múltiples bases de datos de inventario de manera local, sin depender de internet a requerimientos de la institución.  
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## 🚀 Características principales
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- 🔍 **Gestión de bases de datos SQLite**: importar, exportar, eliminar y listar.  
+- 🎨 **Modo oscuro/claro** con persistencia en `localStorage`.  
+- 📂 **Compatibilidad multiplataforma** gracias a `@tauri-apps/api/path` (`appDir`) para rutas dinámicas seguras.  
+- 🔑 **Protección al eliminar bases de datos** con confirmación y contraseña.  
+- ⚡ **Desarrollo rápido** con **Vite** como bundler.  
+- 📊 **Interfaz moderna** con **React + TailwindCSS**.  
+- 🖥️ **Optimizado para escritorio** con **Tauri** (menor consumo de recursos que Electron).  
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+---
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## 🛠️ Tecnologías utilizadas
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+- [Tauri](https://tauri.app/) → empaquetado multiplataforma.  
+- [React](https://react.dev/) → interfaz de usuario.  
+- [Vite](https://vitejs.dev/) → bundler y servidor de desarrollo ultrarrápido.  
+- [TailwindCSS](https://tailwindcss.com/) → estilos rápidos y modernos.  
+- [SQLite](https://www.sqlite.org/) → almacenamiento local de datos.  
+- [TypeScript](https://www.typescriptlang.org/) → tipado seguro y mantenimiento.  
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+---
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## 📂 Estructura del proyecto
+
+```bash
+├── src/
+│   ├── components/       # Componentes de React
+│   ├── pages/            # Vistas principales
+│   ├── utils/            # Funciones auxiliares
+│   ├── App.tsx           # Punto de entrada de la interfaz
+│   └── main.tsx          # Configuración inicial
+├── public/               # Archivos estáticos
+├── tauri/                # Configuración del backend de Tauri
+├── index.html            # Archivo HTML principal
+├── package.json          # Dependencias del frontend
+└── vite.config.ts        # Configuración de Vite

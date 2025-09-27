@@ -2,9 +2,13 @@ name: Sistema-Integral-De-Gestión-De-Almacén
 
 on:
   push:
-    branches: [rama-secundaria]
+
+
+
+       branches: [main]
   pull_request:
-    branches: [rama-secundaria]
+       branches: [main]
+
 
 jobs:
   build:
