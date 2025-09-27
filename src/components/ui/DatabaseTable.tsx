@@ -1,5 +1,9 @@
+import { invoke } from '@tauri-apps/api/tauri';  // Para llamar a comandos Tauri
+import { open } from '@tauri-apps/api/dialog';  // Para diálogos de archivo (opcional para exportar)
+
 interface Database {
   name: string;
+  status: string;  // Agregado para coincidir con el mockup y backend
   lastModified: string;
   size: string;
   path?: string;
@@ -7,32 +11,82 @@ interface Database {
 
 interface DatabaseTableProps {
   databases: Database[];
+  onRefresh: () => void;  // Callback para refrescar la lista después de eliminar/exportar
 }
 
-const DatabaseTable = ({ databases }: DatabaseTableProps) => {
+const DatabaseTable = ({ databases, onRefresh }: DatabaseTableProps) => {
+  if (databases.length === 0) {
+    return (
+      <div className="mt-6 md:mt-8 p-4 text-center text-gray-400 bg-gray-700 rounded-lg border border-gray-600">
+        No hay bases de datos disponibles.
+      </div>
+    );
+  }
+
+  const handleExport = async (name: string) => {
+    try {
+      const targetPath = await open({
+        title: 'Guardar exportación',
+        directory: false,
+        multiple: false,
+        defaultPath: `${name}.db`,
+      });
+      if (targetPath) {
+        await invoke('export_database', { name, targetPath });
+        alert('Base de datos exportada con éxito');
+      }
+    } catch (error) {
+      console.error('Error al exportar:', error);
+      alert('Error al exportar la base de datos');
+    }
+  };
+
+  const handleDelete = async (name: string) => {
+    if (confirm(`¿Estás seguro de eliminar "${name}"?`)) {
+      try {
+        await invoke('delete_database', { name });
+        onRefresh();  // Refresca la lista
+        alert('Base de datos eliminada con éxito');
+      } catch (error) {
+        console.error('Error al eliminar:', error);
+        alert('Error al eliminar la base de datos');
+      }
+    }
+  };
+
   return (
-    <div className="mt-6 md:mt-8 overflow-x-auto border shadow-sm rounded-lg border-gray-200 bg-white">
+    <div className="mt-6 md:mt-8 overflow-x-auto border shadow-sm rounded-lg border-gray-600 bg-gray-700">
       <table className="w-full min-w-[640px]">
-        <thead className="bg-gray-50">
+        <thead className="bg-gray-900">
           <tr>
-            <th className="px-4 md:px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Nombre</th>
-            <th className="hidden sm:table-cell px-4 md:px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Última Modificación</th>
-            <th className="px-4 md:px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Tamaño</th>
-            <th className="hidden lg:table-cell px-4 md:px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Ruta</th>
+            <th className="px-4 md:px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-white">Nombre</th>
+            <th className="px-4 md:px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-white">Estado</th>
+            <th className="hidden sm:table-cell px-4 md:px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-white">Última Modificación</th>
+            <th className="px-4 md:px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-white">Tamaño</th>
+            <th className="hidden lg:table-cell px-4 md:px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-white">Ruta</th>
+            <th className="px-4 md:px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-white">Acciones</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-200">
+        <tbody className="divide-y divide-gray-600">
           {databases.map((db, index) => (
             <tr key={index}>
-              <td className="whitespace-nowrap px-4 md:px-6 py-4 text-sm font-medium text-gray-900">
+              <td className="whitespace-nowrap px-4 md:px-6 py-4 text-sm font-medium text-white bg-gray-800">
                 <div className="flex flex-col sm:flex-row sm:items-center">
                   <span>{db.name}</span>
-                  <span className="sm:hidden text-xs mt-1 text-gray-600">{db.lastModified}</span>
+                  <span className="sm:hidden text-xs mt-1 text-gray-400">{db.lastModified}</span>
                 </div>
               </td>
-              <td className="hidden sm:table-cell whitespace-nowrap px-4 md:px-6 py-4 text-sm text-gray-600">{db.lastModified}</td>
-              <td className="whitespace-nowrap px-4 md:px-6 py-4 text-sm text-gray-600">{db.size}</td>
-              <td className="hidden lg:table-cell whitespace-nowrap px-4 md:px-6 py-4 text-sm text-gray-600">{db.path}</td>
+              <td className="px-4 md:px-6 py-4 text-sm text-white bg-gray-800">{db.status}</td>
+              <td className="hidden sm:table-cell whitespace-nowrap px-4 md:px-6 py-4 text-sm text-white bg-gray-800">{db.lastModified}</td>
+              <td className="whitespace-nowrap px-4 md:px-6 py-4 text-sm text-white bg-gray-800">{db.size}</td>
+              <td className="hidden lg:table-cell whitespace-nowrap px-4 md:px-6 py-4 text-sm text-white bg-gray-800">{db.path || 'N/A'}</td>
+              <td className="whitespace-nowrap px-4 md:px-6 py-4 text-sm text-white bg-gray-800">
+                <div className="flex space-x-2">
+                  <button className="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700">Editar</button>
+                  <button onClick={() => handleExport(db.name)} className="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700">Exportar</button>
+                  <button onClick={() => handleDelete(db.name)} className="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700">Eliminar</button>
+                </div>
+              </td>
             </tr>
           ))}
         </tbody>
