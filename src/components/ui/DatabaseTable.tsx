@@ -1,17 +1,10 @@
-import { invoke } from '@tauri-apps/api/tauri';  // Para llamar a comandos Tauri
-import { open } from '@tauri-apps/api/dialog';  // Para diálogos de archivo (opcional para exportar)
-
-interface Database {
-  name: string;
-  status: string;  // Agregado para coincidir con el mockup y backend
-  lastModified: string;
-  size: string;
-  path?: string;
-}
+import { invoke } from '@tauri-apps/api/tauri';
+import { open } from '@tauri-apps/api/dialog';
+import type { Database } from "../../pages/types"; // ruta relativa desde components/ui/DatabaseTable.tsx
 
 interface DatabaseTableProps {
   databases: Database[];
-  onRefresh: () => void;  // Callback para refrescar la lista después de eliminar/exportar
+  onRefresh: () => void;
 }
 
 const DatabaseTable = ({ databases, onRefresh }: DatabaseTableProps) => {
@@ -45,7 +38,7 @@ const DatabaseTable = ({ databases, onRefresh }: DatabaseTableProps) => {
     if (confirm(`¿Estás seguro de eliminar "${name}"?`)) {
       try {
         await invoke('delete_database', { name });
-        onRefresh();  // Refresca la lista
+        onRefresh();
         alert('Base de datos eliminada con éxito');
       } catch (error) {
         console.error('Error al eliminar:', error);
@@ -76,7 +69,16 @@ const DatabaseTable = ({ databases, onRefresh }: DatabaseTableProps) => {
                   <span className="sm:hidden text-xs mt-1 text-gray-400">{db.lastModified}</span>
                 </div>
               </td>
-              <td className="px-4 md:px-6 py-4 text-sm text-white bg-gray-800">{db.status}</td>
+
+              {/* Badge para status */}
+              <td className="px-4 md:px-6 py-4 text-sm bg-gray-800">
+                <span className={`px-2 py-1 rounded-full text-xs font-bold ${
+                  db.status === "active" ? "bg-green-500 text-white" : "bg-red-500 text-white"
+                }`}>
+                  {db.status}
+                </span>
+              </td>
+
               <td className="hidden sm:table-cell whitespace-nowrap px-4 md:px-6 py-4 text-sm text-white bg-gray-800">{db.lastModified}</td>
               <td className="whitespace-nowrap px-4 md:px-6 py-4 text-sm text-white bg-gray-800">{db.size}</td>
               <td className="hidden lg:table-cell whitespace-nowrap px-4 md:px-6 py-4 text-sm text-white bg-gray-800">{db.path || 'N/A'}</td>
