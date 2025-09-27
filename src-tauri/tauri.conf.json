@@ -7,12 +7,17 @@
     "distDir": "../dist"
   },
   "package": {
-    "productName": "Almacén-Unea",
+    "productName": "Almacen-Unea",
     "version": "0.1.0"
   },
   "tauri": {
     "allowlist": {
-      "all": false
+      "fs": {
+        "all": true
+      },
+      "dialog": {
+        "all": true
+      }
     },
     "bundle": {
       "active": true,
@@ -55,11 +60,16 @@
     },
     "windows": [
       {
-        "fullscreen": false,
-        "height": 600,
+        "title": "Sistema Almacén UNEA",
+        "width": 1080,
+        "height": 720,
+        "minWidth": 1080,
+        "minHeight": 720,
         "resizable": true,
-        "title": "Almacén-Unea",
-        "width": 800
+        "fullscreen": false,
+        "decorations": true,
+        "alwaysOnTop": false,
+        "skipTaskbar": false
       }
     ]
   }
