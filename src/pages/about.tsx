@@ -1,4 +1,3 @@
-import { invoke } from "@tauri-apps/api/tauri";
 
 const AboutPage = () => { 
 
