@@ -27,14 +27,22 @@ const Sidebar = () => {
           </button>
 
 
-          <button onClick={() => navigate("/pagina")} className="flex items-center gap-3 rounded-md px-3 py-2 text-gray-600 bg-gray-100">
+          <button  className="flex items-center gap-3 rounded-md px-3 py-2 text-gray-600 bg-gray-100">
             <span className="icon">📊</span>
             <span className="text-sm font-bold">Base de datos</span>
           </button>
 
-          <button onClick={() => navigate("/pagina")} className="flex items-center gap-3 rounded-md px-3 py-2 text-gray-600 bg-gray-100">
-            <span className="icon">ℹ️</span>
-            <span className="text-sm font-bold">Acerca de</span>
+          <button
+            onClick={() => navigate('/about')}
+            className="group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium
+             text-gray-100 bg-gray-800/60 hover:bg-gray-700/90
+             transition-all duration-200 ease-out
+             focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:ring-offset-gray-900
+             active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed"
+            aria-label="Acerca del sistema"
+          >
+            <span className="icon text-lg transition-transform duration-200 group-hover:scale-110">ℹ️</span>
+            <span className="text-sm">Acerca de</span>
           </button>
 
         </nav>
