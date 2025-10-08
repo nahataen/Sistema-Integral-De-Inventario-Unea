@@ -1,9 +1,9 @@
 // src/types/index.ts
 export interface Database {
   name: string;
-  lastModified: string;
+  status: string;
   size: string;
-  fileName: string;
-  status: "active" | "inactive";
-  path?: string;
+  last_mod: string;
+  // Ruta
+  path: string;
 }

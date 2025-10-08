@@ -1,6 +1,6 @@
 
 import { invoke } from "@tauri-apps/api/tauri";
-import { open, save } from "@tauri-apps/api/dialog";
+import { open } from "@tauri-apps/api/dialog";
 
 interface HeaderProps {
   searchValue: string;
@@ -12,35 +12,37 @@ const Header = ({ searchValue, setSearchValue }: HeaderProps) => {
     try {
       const selected = await open({
         multiple: false,
-        filters: [{ name: "SQLite Database", extensions: ["db"] }],
+        filters: [{ name: "SQLite Database", extensions: ["sqlite", "db"] }],
       });
 
       if (selected && typeof selected === "string") {
-        await invoke("import_database", { filePath: selected });
+        await invoke("import_database", { filepath: selected });
         alert("✅ Base de datos importada con éxito");
+        // Refresh the database list in the parent component
+        // @ts-ignore
+        if (window.refreshDatabases) {
+          // @ts-ignore
+          window.refreshDatabases();
+        }
       }
     } catch (error) {
       console.error("Error al importar:", error);
-      alert("❌ Error al importar la base de datos");
-    }
-  };
+      let errorMessage = 'Error desconocido';
 
-  const handleExport = async () => {
-    try {
-      const filePath = await save({
-        filters: [{ name: "SQLite Database", extensions: ["db"] }],
-        defaultPath: "database.db",
-      });
-
-      if (filePath) {
-        await invoke("export_database", { filePath });
-        alert("✅ Base de datos exportada con éxito");
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      } else if (error && typeof error === 'object') {
+        // Handle Tauri invoke errors
+        errorMessage = error as any;
       }
-    } catch (error) {
-      console.error("Error al exportar:", error);
-      alert("❌ Error al exportar la base de datos");
+
+      alert(`❌ Error al importar la base de datos: ${errorMessage}`);
     }
   };
+
+
 
   return (
     <header className="flex items-center justify-between px-4 md:px-10 py-3 sticky top-0 z-10 bg-gray-800">
@@ -59,12 +61,7 @@ const Header = ({ searchValue, setSearchValue }: HeaderProps) => {
       </div>
 
       <div className="flex items-center gap-2">
-        <button
-          onClick={handleExport}
-          className="hidden sm:flex px-4 py-2 bg-white text-blue-600 border border-blue-600 rounded-md font-bold hover:bg-blue-50"
-        >
-          Exportar
-        </button>
+      
 
         <button
           onClick={handleImport}

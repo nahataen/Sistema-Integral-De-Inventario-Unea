@@ -7,8 +7,12 @@ const Sidebar = () => {
     <aside className="hidden md:flex h-full min-h-screen flex-col justify-between p-4 shadow-sm w-64 bg-gray-900 text-white">
       <div className="flex flex-col gap-4">
         <div className="flex items-center justify-center px-3 py-2">
-          <div className="w-12 h-12 md:w-16 md:h-16 lg:w-20 lg:h-20 bg-blue-500 rounded-lg flex items-center justify-center text-white font-bold text-lg md:text-xl lg:text-2xl">
-            IMG
+          <div className="w-32 h-32 md:w-24 md:h-24 lg:w-28 lg:h-28 rounded-lg flex items-center justify-center text-white font-bold text-lg md:text-xl lg:text-2xl">
+            <img
+              src="/unealogo.svg"
+              alt="UNEA Logo"
+              className="w-full h-full object-contain filter brightness-0 invert"
+            />
           </div>
         </div>
 

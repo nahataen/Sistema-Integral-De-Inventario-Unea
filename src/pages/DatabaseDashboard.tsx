@@ -2,41 +2,40 @@ import { useState, useEffect } from "react";
 import Sidebar from "../components/layout/Sidebar";
 import Header from "../components/layout/Header";
 import DatabaseTable from "../components/ui/DatabaseTable";
-import type { Database } from "./types"; // porque está en la misma carpeta pages
-
-const initialDatabases: Database[] = [
-  { name: "Base de Datos 1", lastModified: "2024-02-10", size: "2.5 GB", fileName: "db1.db", status: "active" },
-  { name: "Base de Datos 2", lastModified: "2024-03-22", size: "15 GB", fileName: "db2.db", status: "active" },
-  { name: "Base de Datos 3", lastModified: "2024-04-05", size: "500 MB", fileName: "db3.db", status: "inactive" },
-  { name: "Base de Datos 4", lastModified: "2024-05-18", size: "8 GB", fileName: "db4.db", status: "active" },
-];
+import type { Database } from "./types"; // importa el archivo de index.ts dentro de types  la interfaz Database que tiene nombre, estado, tamaño, última modificación y ruta
+import { invoke } from "@tauri-apps/api/tauri";
 
 const DatabaseDashboard = () => {
   const [searchValue, setSearchValue] = useState("");
-  const [databases, setDatabases] = useState<Database[]>([]);
+  const [databases, setDatabases] = useState<Database[]>([]); // Estado para almacenar las bases de datos
+  const [loading, setLoading] = useState(true);
 
-  const initDatabases = async () => {
-    let dir = "";
-    try {
-      const { appDataDir } = await import("@tauri-apps/api/path");
-      dir = await appDataDir();
-    } catch {
-      console.warn("No se pudo cargar @tauri-apps/api/path, usando ruta ficticia");
-      dir = "/ruta/ficticia/"; // fallback para desarrollo en navegador
-    }
-
-    // Crear rutas multiplataforma y conservar status
-    const dbsWithPath = initialDatabases.map(db => ({
-      ...db,
-      path: `${dir}${db.fileName}`,
-    }));
-    setDatabases(dbsWithPath);
-  };
-
+  // Exponer función para refrescar desde Header
   useEffect(() => {
-    initDatabases();
+    // @ts-ignore
+    window.refreshDatabases = loadDatabases;
   }, []);
 
+  // Función para cargar las bases de datos desde el backend
+  const loadDatabases = async () => {
+    try {
+      setLoading(true);
+      const databasesList = await invoke<Database[]>("list_databases");
+      setDatabases(databasesList);
+    } catch (error) {
+      console.error("Error al cargar bases de datos:", error);
+      setDatabases([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Cargar bases de datos al iniciar el componente
+  useEffect(() => {
+    loadDatabases();
+  }, []);
+
+  // Filtrar bases de datos según el valor de búsqueda
   const filteredDatabases = databases.filter(db =>
     db.name.toLowerCase().includes(searchValue.toLowerCase())
   );
@@ -51,7 +50,14 @@ const DatabaseDashboard = () => {
             setSearchValue={setSearchValue}
           />
           <main className="flex-1 p-4 overflow-auto">
-            <DatabaseTable databases={filteredDatabases} onRefresh={initDatabases} />
+            {loading ? (
+              <div className="text-center text-white">Cargando bases de datos...</div>
+            ) : (
+              <DatabaseTable
+                databases={filteredDatabases}
+                onRefresh={loadDatabases}
+              />
+            )}
           </main>
         </div>
       </div>

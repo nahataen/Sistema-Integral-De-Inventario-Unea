@@ -1,5 +1,6 @@
 import { invoke } from '@tauri-apps/api/tauri';
 import { open } from '@tauri-apps/api/dialog';
+import { useState } from 'react';
 import type { Database } from "../../pages/types"; // ruta relativa desde components/ui/DatabaseTable.tsx
 //importar ruter
 import { useNavigate } from "react-router-dom";
@@ -13,6 +14,8 @@ interface DatabaseTableProps {
 // Componente para mostrar la tabla de bases de datos
 const DatabaseTable = ({ databases, onRefresh }: DatabaseTableProps) => {
   const navigate = useNavigate();
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleteCandidate, setDeleteCandidate] = useState<string | null>(null);
   if (databases.length === 0) {
     return (
       <div className="mt-6 md:mt-8 p-4 text-center text-gray-400 bg-gray-700 rounded-lg border border-gray-600">
@@ -40,10 +43,15 @@ const DatabaseTable = ({ databases, onRefresh }: DatabaseTableProps) => {
   };
 
   // función para eliminar base de datos
-  const handleDelete = async (name: string) => {
-    if (confirm(`¿Estás seguro de eliminar "${name}"?`)) {
+  const handleDelete = (name: string) => {
+    setDeleteCandidate(name);
+    setShowDeleteDialog(true);
+  };
+
+  const confirmDelete = async () => {
+    if (deleteCandidate) {
       try {
-        await invoke('delete_database', { name });
+        await invoke('delete_database', { name: deleteCandidate, confirmed: true });
         onRefresh();
         alert('Base de datos eliminada con éxito');
       } catch (error) {
@@ -51,10 +59,13 @@ const DatabaseTable = ({ databases, onRefresh }: DatabaseTableProps) => {
         alert('Error al eliminar la base de datos');
       }
     }
+    setShowDeleteDialog(false);
+    setDeleteCandidate(null);
   };
 
   // Renderizar la tabla de bases de datos
   return (
+    <>
     <div className="mt-6 md:mt-8 overflow-x-auto border shadow-sm rounded-lg border-gray-600 bg-gray-700">
       <table className="w-full min-w-[640px]">
         <thead className="bg-gray-900">
@@ -73,7 +84,7 @@ const DatabaseTable = ({ databases, onRefresh }: DatabaseTableProps) => {
               <td className="whitespace-nowrap px-4 md:px-6 py-4 text-sm font-medium text-white bg-gray-800">
                 <div className="flex flex-col sm:flex-row sm:items-center">
                   <span>{db.name}</span>
-                  <span className="sm:hidden text-xs mt-1 text-gray-400">{db.lastModified}</span>
+                  <span className="sm:hidden text-xs mt-1 text-gray-400">{db.last_mod}</span>
                 </div>
               </td>
 
@@ -86,9 +97,9 @@ const DatabaseTable = ({ databases, onRefresh }: DatabaseTableProps) => {
                 </span>
               </td>
 
-              <td className="hidden sm:table-cell whitespace-nowrap px-4 md:px-6 py-4 text-sm text-white bg-gray-800">{db.lastModified}</td>
+              <td className="hidden sm:table-cell whitespace-nowrap px-4 md:px-6 py-4 text-sm text-white bg-gray-800">{db.last_mod}</td>
               <td className="whitespace-nowrap px-4 md:px-6 py-4 text-sm text-white bg-gray-800">{db.size}</td>
-              <td className="hidden lg:table-cell whitespace-nowrap px-4 md:px-6 py-4 text-sm text-white bg-gray-800">{db.path || 'N/A'}</td>
+              <td className="hidden lg:table-cell whitespace-nowrap px-4 md:px-6 py-4 text-sm text-white bg-gray-800">{db.path}</td>
               <td className="whitespace-nowrap px-4 md:px-6 py-4 text-sm text-white bg-gray-800">
                 <div className="flex space-x-2">
                   <button className="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700" onClick={() => navigate('/hub_tablas')}>Editar</button>
@@ -101,6 +112,19 @@ const DatabaseTable = ({ databases, onRefresh }: DatabaseTableProps) => {
         </tbody>
       </table>
     </div>
+    {showDeleteDialog && (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-gray-800 p-6 rounded-lg border border-gray-600">
+          <h3 className="text-white text-lg mb-4">Confirmar eliminación</h3>
+          <p className="text-gray-300 mb-6">¿Estás seguro de eliminar "{deleteCandidate}"?</p>
+          <div className="flex space-x-4">
+            <button onClick={confirmDelete} className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">Eliminar</button>
+            <button onClick={() => setShowDeleteDialog(false)} className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">Cancelar</button>
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   );
 };
 
