@@ -4,7 +4,7 @@
 mod database_manager; // Declara el módulo
 
 use tauri::Builder;
-use database_manager::{AppState, list_databases, import_database, export_database, delete_database};
+use database_manager::{AppState, list_databases, import_database, export_database, delete_database, open_directory};
 use dirs;
 
 fn main() {
@@ -19,6 +19,7 @@ fn main() {
             import_database,
             export_database,
             delete_database,
+            open_directory,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

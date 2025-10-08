@@ -10,18 +10,19 @@
 /// y están expuestas como comandos Tauri para ser llamadas desde el frontend.
 
 /* ============================================================================
-   Importaciones necesarias para el manejo de bases de datos
+        Importaciones necesarias para el manejo de bases de datos
    ============================================================================ */
 use tauri::State;                    // Para acceder al estado de la aplicación
 use rusqlite::Result;               // Para manejo de resultados de operaciones con SQLite
 use serde::{Deserialize, Serialize}; // Para serializar/deserializar datos (JSON)
 use std::fs;                        // Para operaciones de archivos (leer, escribir, copiar, eliminar)
 use std::path::PathBuf;             // Para trabajar con rutas de archivos de forma segura
+use std::process;                   // Para ejecutar comandos del sistema
 use chrono::{TimeDelta, Utc};       // Para manejo de fechas y tiempos
 
 /* ============================================================================
-   Estructura que representa la información de una base de datos
-   Esta estructura se envía al frontend como JSON
+     Estructura que representa la información de una base de datos
+             Esta estructura se envía al frontend como JSON
    ============================================================================ */
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DatabaseInfo {
@@ -184,10 +185,10 @@ pub fn export_database(state: State<AppState>, name: String, target_path: String
     Ok(())
 }
 
-/* ============================================================================
+/*============================================================================
      Elimina permanentemente una base de datos del directorio de la aplicación
      El usuario debe confirmar la eliminación antes de proceder
-     ============================================================================ */
+  ============================================================================*/
 #[tauri::command]
 pub fn delete_database(state: State<AppState>, name: String, confirmed: bool) -> Result<(), String> {
     // Si no está confirmado, no proceder con la eliminación
@@ -212,5 +213,50 @@ pub fn delete_database(state: State<AppState>, name: String, confirmed: bool) ->
     fs::remove_file(file_to_delete).map_err(|e| format!("Error al eliminar: {}", e))?;
 
     // Eliminación completada exitosamente
+    Ok(())
+}
+
+/*============================================================================
+      Abre el directorio que contiene una base de datos en el explorador de archivos
+      Utiliza comandos específicos de cada plataforma para abrir el directorio
+   ============================================================================*/
+#[tauri::command]
+pub fn open_directory(path: String) -> Result<(), String> {
+    let dir_path = PathBuf::from(&path);
+
+    // Verificar que el directorio existe
+    if !dir_path.exists() {
+        return Err(format!("El directorio no existe: {}", path));
+    }
+
+    if !dir_path.is_dir() {
+        return Err(format!("La ruta no es un directorio: {}", path));
+    }
+
+    // Ejecutar el comando apropiado según la plataforma
+    #[cfg(target_os = "windows")]
+    {
+        process::Command::new("cmd")
+            .args(&["/c", "start", "", &dir_path.to_string_lossy()])
+            .spawn()
+            .map_err(|e| format!("Error al abrir el explorador de archivos: {}", e))?;
+    }
+
+    #[cfg(target_os = "macos")]
+    {
+        process::Command::new("open")
+            .arg(&dir_path)
+            .spawn()
+            .map_err(|e| format!("Error al abrir Finder: {}", e))?;
+    }
+
+    #[cfg(target_os = "linux")]
+    {
+        process::Command::new("xdg-open")
+            .arg(&dir_path)
+            .spawn()
+            .map_err(|e| format!("Error al abrir el administrador de archivos: {}", e))?;
+    }
+
     Ok(())
 }
