@@ -1,0 +1,79 @@
+//se consulta la tabla seleccionada desde edit en el archivo hub_tablas.rs
+use rusqlite::Result;
+use serde::{Deserialize, Serialize};
+use serde_json::Value;
+use std::collections::HashMap;
+use tauri::State;
+
+use crate::database_manager::AppState;
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct TableData {
+    /// Nombre de la tabla
+    pub table_name: String,
+    /// Columnas de la tabla
+    pub columns: Vec<String>,
+    /// Filas de datos
+    pub rows: Vec<HashMap<String, Value>>,
+}
+
+#[tauri::command]
+pub fn consulta_tabla(state: State<AppState>, db_name: String, table_name: String) -> Result<TableData, String> {
+    // Determinar la ruta del archivo de base de datos
+    let db_path = state.db_dir.join(format!("{}.db", db_name));
+    let sqlite_path = state.db_dir.join(format!("{}.sqlite", db_name));
+
+    let db_file = if db_path.exists() {
+        db_path
+    } else if sqlite_path.exists() {
+        sqlite_path
+    } else {
+        return Err(format!("No se encontró la base de datos: {}", db_name));
+    };
+
+    // Abrir la conexión a la base de datos
+    let conn = rusqlite::Connection::open(&db_file).map_err(|e| format!("Error al abrir la base de datos: {}", e))?;
+
+    // Obtener las columnas de la tabla
+    let mut stmt = conn.prepare(&format!("PRAGMA table_info({})", table_name))
+        .map_err(|e| format!("Error al preparar la consulta de columnas: {}", e))?;
+
+    let columns: Vec<String> = stmt.query_map([], |row| {
+        let name: String = row.get(1)?;
+        Ok(name)
+    }).map_err(|e| format!("Error al ejecutar la consulta de columnas: {}", e))?
+      .collect::<Result<Vec<String>, _>>()
+      .map_err(|e| format!("Error al obtener columnas: {}", e))?;
+
+    // Consultar los datos de la tabla
+    let query = format!("SELECT * FROM {}", table_name);
+    let mut stmt = conn.prepare(&query)
+        .map_err(|e| format!("Error al preparar la consulta de datos: {}", e))?;
+
+    let rows: Vec<HashMap<String, Value>> = stmt.query_map([], |row| {
+        let mut map = HashMap::new();
+        for (i, col_name) in columns.iter().enumerate() {
+            let value: rusqlite::Result<Value> = match row.get_ref(i) {
+                Ok(rusqlite::types::ValueRef::Null) => Ok(Value::Null),
+                Ok(rusqlite::types::ValueRef::Integer(i)) => Ok(Value::Number(i.into())),
+                Ok(rusqlite::types::ValueRef::Real(f)) => Ok(Value::Number(serde_json::Number::from_f64(f).unwrap())),
+                Ok(rusqlite::types::ValueRef::Text(s)) => Ok(Value::String(String::from_utf8_lossy(s).to_string())),
+                Ok(rusqlite::types::ValueRef::Blob(b)) => Ok(Value::String(format!("BLOB({} bytes)", b.len()))),
+                Err(e) => Err(e),
+            };
+            if let Ok(val) = value {
+                map.insert(col_name.clone(), val);
+            }
+        }
+        Ok(map)
+    }).map_err(|e| format!("Error al ejecutar la consulta de datos: {}", e))?
+      .collect::<Result<Vec<HashMap<String, Value>>, _>>()
+      .map_err(|e| format!("Error al obtener filas: {}", e))?;
+
+    Ok(TableData {
+        table_name,
+        columns,
+        rows,
+    })
+}
+//se envia la consulta a el archivo consulta_tabla_front.tsx

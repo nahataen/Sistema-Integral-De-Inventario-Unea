@@ -3,6 +3,7 @@ import DatabaseDashboard from "./pages/DatabaseDashboard";
 import Configuracion from "./pages/Configuracion";
 import Pagina from "./pages/pagina";
 import AboutPage from "./pages/about";
+import EditarFila from "./pages/editar_fila";
 //hub tablas
 import InventarioDashboard from "./pages/hub_tablas";
 function App() {
@@ -13,6 +14,7 @@ function App() {
       <Route path="/pagina" element={<Pagina />} />
       <Route path="/about" element={<AboutPage />} />
       <Route path="/hub_tablas" element={<InventarioDashboard />} />
+      <Route path="/editar_fila" element={<EditarFila />} />
     </Routes>
   );
 }

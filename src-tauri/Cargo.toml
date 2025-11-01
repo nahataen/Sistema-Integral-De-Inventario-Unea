@@ -10,15 +10,24 @@ edition = "2021"
 rust-version = "1.65"
 
 [build-dependencies]
+# Versión 1.5.6
 tauri-build = { version = "1.5.6", features = [] }
 
 [dependencies]
 serde_json = "1.0.108"
 serde = { version = "1.0", features = ["derive"] }
-tauri = { version = "1.8.3", features = [ "path-all", "dialog-all", "fs-all"] }
+
+# Tauri principal
+tauri = { version = "1.5.6", features = [ "protocol-all", "path-all", "dialog-all", "fs-all", "shell-open" ] }
+
+# Base de datos SQLite
 rusqlite = { version = "0.37.0", features = ["bundled"] }
-chrono = "0.4.42"
-dirs = "6.0.0"
+
+# Manejo de fechas y tiempos
+chrono = { version = "0.4.42", features = ["serde"] }
+
+# Manejo de rutas del sistema
+dirs = "5.0.0"
 
 [features]
 custom-protocol = ["tauri/custom-protocol"]

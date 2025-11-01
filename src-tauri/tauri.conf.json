@@ -12,20 +12,39 @@
   },
   "tauri": {
     "allowlist": {
+      "all": false,
       "fs": {
-        "all": true
+        "all": true,
+        "scope": [
+          "$APPDATA/**",
+          "$APPDATADIR/**",
+          "$RESOURCE/**",
+          "**"
+        ]
       },
       "dialog": {
         "all": true
       },
       "path": {
         "all": true
+      },
+      "shell": {
+        "open": true
+      },
+      "protocol": {
+        "all": true,
+        "asset": true,
+        "assetScope": [
+          "$APPDATA/**",
+          "$APPDATADIR/**",
+          "$RESOURCE/**",
+          "**"
+        ]
       }
     },
     "bundle": {
       "active": true,
       "category": "DeveloperTool",
-      "copyright": "",
       "deb": {
         "depends": []
       },

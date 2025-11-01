@@ -110,15 +110,15 @@ const DatabaseTable = ({ databases, onRefresh }: DatabaseTableProps) => {
                         alert('Error al abrir el directorio: ' + error);
                       }
                     }}
-                    className="text-left truncate max-w-xs hover:underline appearance-none bg-transparent border-none p-0 cursor-pointer"
+                    className="px-2 py-1 text-xs bg-gray-600 text-white rounded hover:bg-gray-700"
                     title={db.path}
                   >
-                    {db.path.length > 50 ? '...' + db.path.slice(-47) : db.path}
+                    Abrir
                   </button>
                 </td>
                 <td className="whitespace-nowrap px-4 md:px-6 py-4 text-sm text-white bg-gray-800">
-                  <div className="flex space-x-2">
-                    <button className="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700" onClick={() => navigate('/hub_tablas')}>Editar</button>
+                  <div className="flex flex-col space-y-1 sm:flex-row sm:space-y-0 sm:space-x-2">
+                    <button className="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700" onClick={() => navigate('/hub_tablas', { state: { dbName: db.name } })}>Editar</button>
                     <button onClick={() => handleExport(db.name)} className="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700">Exportar</button>
                     <button onClick={() => handleDelete(db.name)} className="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700">Eliminar</button>
                   </div>
