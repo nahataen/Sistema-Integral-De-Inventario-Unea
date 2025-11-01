@@ -10,16 +10,9 @@ const Pagina = () => {
   const [searchTerm, setSearchTerm] = useState("");
   // CAMBIO: Renombrado de 'selectedFilter' a 'sortOrder'
   const [sortOrder, setSortOrder] = useState("default"); // 'default', 'asc', 'desc'
-  const [selectedRecords, setSelectedRecords] = useState<number[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
   const [selectedRowId, setSelectedRowId] = useState<number | null>(null);
-
-  const handleCheckboxChange = (id: number) => {
-    setSelectedRecords(prev =>
-      prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
-    );
-  };
 
   const handleRowSelect = (rowId: number) => {
     setSelectedRowId(selectedRowId === rowId ? null : rowId);
@@ -93,7 +86,7 @@ const Pagina = () => {
 
     // La búsqueda (filtro) AHORA SIEMPRE busca en todas las columnas
     return filterableColumns.some(column =>
-      String(record[column] || '').toLowerCase().includes(term)
+      String(record[column as keyof typeof record] || '').toLowerCase().includes(term)
     );
   }).sort((a, b) => {
     // Lógica de ORDENAMIENTO
@@ -113,9 +106,6 @@ const Pagina = () => {
     // 'default' (orden por ID)
     return a.id - b.id;
   });
-
-
-  const currentRecords = filteredRecords.slice(indexOfFirstRecord, indexOfLastRecord);
   const totalPages = Math.ceil(filteredRecords.length / itemsPerPage);
 
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber);

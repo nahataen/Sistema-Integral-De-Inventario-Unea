@@ -23,12 +23,13 @@ interface TableData {
 // POR QUÉ: Permite pasar información y funciones desde el componente padre
 // CÓMO: Incluye nombre de DB, tabla, fila seleccionada, funciones de selección y guardado, y búsqueda
 interface ConsultaTablaFrontProps {
-  dbName: string;
-  tableName: string;
-  selectedRowId: number | null;
-  onRowSelect: (rowId: number) => void;
-  onSaveRow?: (rowId: number, updatedData: Record<string, any>) => void;
-  searchTerm?: string;
+   dbName: string;
+   tableName: string;
+   selectedRowId: number | null;
+   onRowSelect: (rowId: number) => void;
+   onSaveRow?: (rowId: number, updatedData: Record<string, any>) => void;
+   searchTerm?: string;
+   sortOrder?: string;
 }
 
 // ===== COMPONENTE PRINCIPAL =====
@@ -93,16 +94,6 @@ const ConsultaTablaFront: React.FC<ConsultaTablaFrontProps> = ({
     }
   }, [dbName, tableName]);
 
-  // ===== BLOQUE 3: FUNCIONES DE EDICIÓN =====
-  // Maneja clic en botón de editar fila
-  const handleEditClick = (rowId: number) => {
-    if (tableData) {
-      // Guardamos los datos de la fila en editData para modificarlos
-      const rowData = tableData.rows[rowId];
-      setEditData({ ...rowData });
-      setEditingRowId(rowId);
-    }
-  };
 
   // Guardar cambios de edición
   const handleSaveEdit = () => {
