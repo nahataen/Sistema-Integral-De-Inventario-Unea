@@ -75,9 +75,6 @@ const Pagina = () => {
   // Columnas usadas para el filtrado (la búsqueda general)
   const filterableColumns = Object.keys(records[0] || {}).filter(key => key !== 'id');
 
-  // Pagination logic
-  const indexOfLastRecord = currentPage * itemsPerPage;
-
   // CAMBIO: Lógica de filtrado y ordenamiento combinada
   const filteredRecords = records.filter(record => {
     const term = searchTerm.toLowerCase();
