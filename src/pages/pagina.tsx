@@ -77,7 +77,6 @@ const Pagina = () => {
 
   // Pagination logic
   const indexOfLastRecord = currentPage * itemsPerPage;
-  const indexOfFirstRecord = indexOfLastRecord - itemsPerPage;
 
   // CAMBIO: Lógica de filtrado y ordenamiento combinada
   const filteredRecords = records.filter(record => {
