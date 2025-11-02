@@ -4,6 +4,10 @@
 mod database_manager;
 mod hub_tablas;
 mod consulta_tablas;
+mod editar;
+mod io_utils; // NUEVO: Declara el módulo compartido.
+mod exportar_tabla; // NUEVO: Declara el módulo de exportación.
+mod importar_tabla; // NUEVO: Declara el módulo de importación.
 
 use tauri::Builder;
 
@@ -19,6 +23,7 @@ use database_manager::{
 use hub_tablas::{ list_tables, delete_table, upload_table_image, delete_table_image };
 
 use consulta_tablas::consulta_tabla;
+use editar::execute_sql;
 use dirs;
 
 fn main() {
@@ -40,7 +45,13 @@ fn main() {
                 upload_table_image,
                 delete_table_image,
                 consulta_tabla,
-                open_directory
+                open_directory,
+                editar::update_table_row,
+                execute_sql,
+                // NUEVO: Registra los nuevos comandos.
+                exportar_tabla::export_table_to_json,
+                importar_tabla::import_table_from_json,
+                importar_tabla::import_table_from_json_with_options,
             ]
         )
         .run(tauri::generate_context!())

@@ -9,6 +9,9 @@ import toast, { Toaster } from "react-hot-toast"; // Importamos react-hot-toast 
 // Importar el nuevo componente TableCard
 import TableCard from "../components/TableCard";
 
+// Importar el componente ImportarExportar
+import ImportarExportar from "../components/ui/ImportarExportar";
+
 // Definimos la interfaz para la información de la tabla
 // (Esto ayuda a TypeScript a entender la estructura de los datos que esperamos)
 export interface TableInfo {
@@ -76,7 +79,7 @@ const InventarioDashboard = () => {
   const handleDeleteTable = async (tableName: string) => {
     // Pedimos confirmación al usuario antes de proceder con una acción irreversible
     const confirmDelete = window.confirm(
-      `¿Estás seguro de eliminar la tabla "${tableName}"? Esta acción es irreversible.`,
+      `¿Estás seguro de eliminar la tabla "${tableName}"? Esta acción es irreversible.`
     );
     if (confirmDelete) {
       try {
@@ -129,8 +132,8 @@ const InventarioDashboard = () => {
           prevData.map((table) =>
             table.name === tableName
               ? { ...table, image_path: newImagePath }
-              : table,
-          ),
+              : table
+          )
         );
 
         // Incrementamos refreshKey para forzar la recarga de la imagen en TableCard
@@ -152,7 +155,7 @@ const InventarioDashboard = () => {
   const handleDeleteImage = async (tableName: string) => {
     // Pedimos confirmación al usuario
     const confirmDelete = window.confirm(
-      `¿Estás seguro de eliminar la imagen de "${tableName}"?`,
+      `¿Estás seguro de eliminar la imagen de "${tableName}"?`
     );
 
     if (confirmDelete) {
@@ -171,10 +174,16 @@ const InventarioDashboard = () => {
     }
   };
 
+  // Función para manejar el éxito de importación/exportación
+  const handleImportExportSuccess = () => {
+    // Refrescamos la lista de tablas
+    setRefreshKey((prev) => prev + 1);
+  };
+
   // --- LÓGICA DE FILTRADO ---
   // Filtramos las tablas basándonos en el término de búsqueda, sin importar mayúsculas/minúsculas
   const filteredTables = tableData.filter((table) =>
-    table.name.toLowerCase().includes(searchTerm.toLowerCase()),
+    table.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -223,34 +232,43 @@ const InventarioDashboard = () => {
           <p className="text-gray-400 mt-1">Administrar tablas</p>
         </header>
 
-        {/* Barra de acciones (ej. búsqueda) */}
-        <div className="mt-8 flex items-center justify-between">
-          <div className="relative w-full max-w-xs">
-            {/* Icono de búsqueda dentro del campo de texto */}
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <svg
-                className="h-5 w-5 text-gray-500"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
-              </svg>
+        {/* Barra de acciones (ej. búsqueda y gestión de datos) */}
+        <div className="mt-8 space-y-6">
+          <div className="flex items-center justify-between">
+            <div className="relative w-full max-w-xs">
+              {/* Icono de búsqueda dentro del campo de texto */}
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg
+                  className="h-5 w-5 text-gray-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg>
+              </div>
+              {/* Campo de entrada para buscar tablas */}
+              <input
+                type="text"
+                placeholder="Buscar..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)} // Actualiza el término de búsqueda al escribir
+                className="block w-full pl-10 pr-3 py-2.5 border border-gray-600 rounded-lg bg-gray-700 text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
             </div>
-            {/* Campo de entrada para buscar tablas */}
-            <input
-              type="text"
-              placeholder="Buscar..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)} // Actualiza el término de búsqueda al escribir
-              className="block w-full pl-10 pr-3 py-2.5 border border-gray-600 rounded-lg bg-gray-700 text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
           </div>
+
+          {/* Componente de Importar/Exportar */}
+          <ImportarExportar
+            dbName={dbName}
+            tableList={tableData}
+            onSuccess={handleImportExportSuccess}
+          />
         </div>
 
         {/* Cuadrícula donde se muestran las tarjetas de las tablas */}

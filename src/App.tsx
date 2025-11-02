@@ -1,4 +1,4 @@
-import React, { lazy, Suspense } from "react"; // Importamos lazy y Suspense para la carga perezosa
+import { lazy, Suspense } from "react"; // Importamos lazy y Suspense para la carga perezosa
 import { Routes, Route } from "react-router-dom";
 
 // Importamos los componentes de página de forma perezosa (lazy loading)
