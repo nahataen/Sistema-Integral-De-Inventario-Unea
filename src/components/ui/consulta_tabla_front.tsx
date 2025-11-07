@@ -181,80 +181,103 @@ const ConsultaTablaFront: React.FC<ConsultaTablaFrontProps> = ({
   if (error) return <div className="p-8 text-center text-red-400">{error}</div>;
   if (!tableData) return <div className="p-8 text-center text-gray-400">No se encontraron datos.</div>;
 
+
+
+
+
   // Renderizado del componente.
   return (
-    <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl shadow-2xl border border-gray-600 w-full">
+    <>
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: #374151;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #1d4ed8;
+        }
+        .custom-scrollbar {
+          scrollbar-width: thin;
+          scrollbar-color: #1d4ed8 #374151;
+        }
+      `}</style>
+      <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl shadow-2xl border border-gray-600 w-full">
       <div className="p-6 border-b border-gray-600 bg-gray-700">
         <h2 className="text-2xl font-bold text-white">{tableData.table_name}</h2>
       </div>
 
-      <div className="overflow-x-auto max-h-[400px] scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
-        <table className="min-w-full">
-          <thead className="bg-gray-700 sticky top-0 z-10">
-            <tr>
-              <th className="px-6 py-4 text-center text-sm font-semibold text-gray-200 w-20 border-r border-gray-600">Acción</th>
-              {tableData.columns.map((column) => (
-                <th key={column} className="px-6 py-4 text-center text-sm font-semibold text-gray-200 border-r border-gray-600 last:border-r-0">
-                  {column}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="bg-gray-900/50">
-            {processedRows.map((row, rowIndex) => (
-              <tr
-                key={rowIndex}
-                className={`border-b border-gray-600 group ${selectedRowId === rowIndex ? 'bg-blue-600' : 'hover:bg-blue-600/40'}`}
-                onClick={() => editingRowId === null && onRowSelect(rowIndex)}
-              >
-                <td className="px-6 py-4 text-center border-r border-gray-600">
-                  {editingRowId === rowIndex ? (
-                    <div className="flex justify-center space-x-2">
-                      <button onClick={handleSaveEdit} className="px-3 py-1 text-xs bg-green-600 rounded-full hover:bg-green-700">Guardar</button>
-                      <button onClick={handleCancelEdit} className="px-3 py-1 text-xs bg-red-600 rounded-full hover:bg-red-700">Cancelar</button>
-                    </div>
-                  ) : (
-                    <input type="radio" name="row-select" checked={selectedRowId === rowIndex} onChange={() => onRowSelect(rowIndex)} />
-                  )}
-                </td>
+      <div className="flex flex-col h-[60vh] overflow-hidden">
+        <div className="flex-1 overflow-auto custom-scrollbar">
+          <table className="min-w-full">
+            <thead className="bg-gray-700 sticky top-0 z-10">
+              <tr>
+                <th className="px-6 py-4 text-center text-sm font-semibold text-gray-200 w-20 border-r border-gray-600">Acción</th>
                 {tableData.columns.map((column) => (
-                  <td key={column} className="px-6 py-4 text-sm text-gray-200 text-center border-r border-gray-600 last:border-r-0">
-                    {editingRowId === rowIndex ? (
-                      <input
-                        type="text"
-                        value={editData[column] ?? ''}
-                        onChange={(e) => handleInputChange(column, e.target.value)}
-                        className="w-full px-2 py-1 bg-gray-700 border border-gray-600 rounded text-white"
-                      />
-                    ) : (
-                      <div className="truncate" title={String(row[column] ?? 'NULL')}>{String(row[column] ?? 'NULL')}</div>
-                    )}
-                  </td>
+                  <th key={column} className="px-6 py-4 text-center text-sm font-semibold text-gray-200 border-r border-gray-600 last:border-r-0">
+                    {column}
+                  </th>
                 ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody className="bg-gray-900/50">
+              {processedRows.map((row, rowIndex) => (
+                <tr
+                  key={rowIndex}
+                  className={`border-b border-gray-600 group ${selectedRowId === rowIndex ? 'bg-blue-600' : 'hover:bg-blue-600/40'}`}
+                  onClick={() => editingRowId === null && onRowSelect(rowIndex)}
+                >
+                  <td className="px-6 py-4 text-center border-r border-gray-600">
+                    {editingRowId === rowIndex ? (
+                      <div className="flex justify-center space-x-2">
+                        <button onClick={handleSaveEdit} className="px-3 py-1 text-xs bg-green-600 rounded-full hover:bg-green-700">Guardar</button>
+                        <button onClick={handleCancelEdit} className="px-3 py-1 text-xs bg-red-600 rounded-full hover:bg-red-700">Cancelar</button>
+                      </div>
+                    ) : (
+                      <input type="radio" name="row-select" checked={selectedRowId === rowIndex} onChange={() => onRowSelect(rowIndex)} />
+                    )}
+                  </td>
+                  {tableData.columns.map((column) => (
+                    <td key={column} className="px-6 py-4 text-sm text-gray-200 text-center border-r border-gray-600 last:border-r-0">
+                      {editingRowId === rowIndex ? (
+                        <input
+                          type="text"
+                          value={editData[column] ?? ''}
+                          onChange={(e) => handleInputChange(column, e.target.value)}
+                          className="w-full px-2 py-1 bg-gray-700 border border-gray-600 rounded text-white"
+                        />
+                      ) : (
+                        <div className="truncate" title={String(row[column] ?? 'NULL')}>{String(row[column] ?? 'NULL')}</div>
+                      )}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
-      <div className="p-6 border-t border-gray-600 bg-gray-800">
-        <div className="flex justify-end">
-          <button
-            onClick={() => {
-              if (selectedRowId !== null) {
-                const selectedRow = processedRows[selectedRowId];
-                setEditData({ ...selectedRow });
-                setEditingRowId(selectedRowId);
-              }
-            }}
-            disabled={selectedRowId === null || editingRowId !== null}
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors font-medium"
-          >
-            Editar Fila Seleccionada
-          </button>
+        <div className="p-6 border-t border-gray-600 bg-gray-800 flex-shrink-0">
+          <div className="flex justify-end">
+            <button
+              onClick={() => {
+                if (selectedRowId !== null) {
+                  const selectedRow = processedRows[selectedRowId];
+                  setEditData({ ...selectedRow });
+                  setEditingRowId(selectedRowId);
+                }
+              }}
+              disabled={selectedRowId === null || editingRowId !== null}
+              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors font-medium"
+            >
+              Editar Fila Seleccionada
+            </button>
+          </div>
         </div>
       </div>
     </div>
+  </>
   );
 };
 
