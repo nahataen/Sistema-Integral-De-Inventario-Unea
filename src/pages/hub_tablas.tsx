@@ -1,133 +1,92 @@
 import { useState, useEffect, useCallback } from "react";
-import { useNavigate, useLocation, Link } from "react-router-dom"; // Importamos Link para la navegación interna
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { invoke } from "@tauri-apps/api/tauri";
 import { open } from "@tauri-apps/api/dialog";
-// import { convertFileSrc } from "@tauri-apps/api/tauri"; // Ya no es necesario aquí, se mueve a TableCard
-
-import toast, { Toaster } from "react-hot-toast"; // Importamos react-hot-toast para notificaciones
-
-// Importar el nuevo componente TableCard
+import toast, { Toaster } from "react-hot-toast";
 import TableCard from "../components/TableCard";
-
-// Importar el componente ImportarExportar
 import ImportarExportar from "../components/ui/ImportarExportar";
 
-// Definimos la interfaz para la información de la tabla
-// (Esto ayuda a TypeScript a entender la estructura de los datos que esperamos)
 export interface TableInfo {
   name: string;
-  image_path?: string; // La ruta de la imagen es opcional
+  image_path?: string;
 }
 
-// Componente principal para el dashboard de inventario, donde se gestionan las tablas de una base de datos
 const InventarioDashboard = () => {
-  // Hook para navegar entre diferentes rutas de la aplicación
   const navigate = useNavigate();
-  // Hook para obtener información sobre la URL actual, incluyendo el estado pasado
   const location = useLocation();
-  // Obtenemos el nombre de la base de datos del estado de la ruta o usamos "Desconocida" por defecto
   const dbName = location.state?.dbName || "Desconocida";
 
-  // Estado para el término de búsqueda de tablas
   const [searchTerm, setSearchTerm] = useState("");
-  // Estado para almacenar los datos de las tablas cargadas
   const [tableData, setTableData] = useState<TableInfo[]>([]);
-  // Estado para indicar si las tablas están cargando (mostrar un spinner, por ejemplo)
   const [loading, setLoading] = useState(true);
-  // Clave para forzar el refresco de la lista de tablas (se incrementa para reactivar useEffect)
   const [refreshKey, setRefreshKey] = useState(0);
-  // Estado para indicar qué tabla está subiendo una imagen (para deshabilitar el botón de esa tabla)
   const [uploadingImage, setUploadingImage] = useState<string | null>(null);
 
-  // --- CARGAR TABLAS ---
-  // Función asíncrona para obtener la lista de tablas de la base de datos
-  // Usamos useCallback para memorizar esta función y que no cambie en cada renderizado,
-  // solo si sus dependencias (dbName) cambian.
   const loadTables = useCallback(async () => {
     try {
-      // Llamamos a la función "list_tables" del backend de Tauri
       const tableList: TableInfo[] = await invoke("list_tables", { dbName });
-      console.log("Tablas cargadas después de actualizar:", tableList); // Para depuración, verificamos las rutas de imagen
-      setTableData(tableList); // Actualizamos el estado con las tablas obtenidas
+      console.log("Tablas cargadas después de actualizar:", tableList);
+      setTableData(tableList);
     } catch (error) {
-      console.error("Error al cargar tablas:", error); // Registramos el error en consola
-      // Mostramos una notificación al usuario de que hubo un error
+      console.error("Error al cargar tablas:", error);
       toast.error("Error al cargar las tablas de la base de datos.");
     } finally {
-      setLoading(false); // Indicamos que la carga ha terminado, independientemente del resultado
+      setLoading(false);
     }
-  }, [dbName]); // Esta función solo se recrea si el valor de dbName cambia
+  }, [dbName]);
 
-  // Hook de efecto que se ejecuta cuando el nombre de la base de datos o la clave de refresco cambian
   useEffect(() => {
     if (dbName !== "Desconocida") {
-      loadTables(); // Si tenemos un nombre de base de datos válido, cargamos las tablas
+      loadTables();
     } else {
-      setLoading(false); // Si no, simplemente indicamos que no hay carga pendiente
+      setLoading(false);
     }
-  }, [dbName, refreshKey, loadTables]); // Dependencias del efecto: se ejecuta si dbName, refreshKey o loadTables cambian
+  }, [dbName, refreshKey, loadTables]);
 
-  // --- FUNCIONES DE MANEJO DE EVENTOS ---
-
-  // Función para manejar la edición de una tabla (navega a la página de edición)
   const handleEditTable = (tableName: string) => {
-    // Navegamos a la ruta "/pagina", pasando el nombre de la tabla y la base de datos como estado
     navigate("/pagina", { state: { tableName, dbName } });
   };
 
-  // Función para manejar la eliminación de una tabla
   const handleDeleteTable = async (tableName: string) => {
-    // Pedimos confirmación al usuario antes de proceder con una acción irreversible
     const confirmDelete = window.confirm(
       `¿Estás seguro de eliminar la tabla "${tableName}"? Esta acción es irreversible.`
     );
     if (confirmDelete) {
       try {
-        // Llamamos al comando del backend para eliminar la tabla
         await invoke("delete_table", {
           dbName,
           tableName,
-          confirmDelete: true, // Se pasa la confirmación al backend
+          confirmDelete: true,
         });
-        // Incrementamos la clave de refresco para volver a cargar la lista de tablas
         setRefreshKey((prev) => prev + 1);
-        // Mostramos una notificación de éxito
         toast.success(`Tabla "${tableName}" eliminada con éxito.`);
       } catch (error) {
-        // Registramos el error y mostramos una notificación de error
         console.error("Error al eliminar tabla:", error);
         toast.error("Error al eliminar la tabla.");
       }
     }
   };
 
-  // Función para manejar la subida de una imagen para una tabla
   const handleUploadImage = async (tableName: string) => {
     try {
-      // Indicamos que se está subiendo una imagen para esta tabla específica
       setUploadingImage(tableName);
-
-      // Abrimos el diálogo de selección de archivos del sistema operativo
       const selected = await open({
-        multiple: false, // Solo permitir seleccionar un archivo
+        multiple: false,
         filters: [
           {
-            name: "Imágenes", // Filtramos para mostrar solo archivos de imagen
+            name: "Imágenes",
             extensions: ["jpg", "jpeg", "png", "gif", "webp"],
           },
         ],
       });
 
-      // Si se seleccionó un archivo (y es una cadena de texto, que es la ruta)
       if (selected && typeof selected === "string") {
-        // Llamamos al comando del backend para subir la imagen y asociarla a la tabla
         const newImagePath: string = await invoke("upload_table_image", {
           dbName,
           tableName,
-          imagePath: selected, // Ruta del archivo de imagen seleccionado
+          imagePath: selected,
         });
 
-        // Actualizamos el estado local de 'tableData' con la nueva ruta de imagen
         setTableData((prevData) =>
           prevData.map((table) =>
             table.name === tableName
@@ -136,134 +95,105 @@ const InventarioDashboard = () => {
           )
         );
 
-        // Incrementamos refreshKey para forzar la recarga de la imagen en TableCard
         setRefreshKey((prev) => prev + 1);
-        // Mostramos una notificación de éxito
-        toast.success(`Imagen para \"${tableName}\" subida con éxito.`);
+        toast.success(`Imagen para "${tableName}" subida con éxito.`);
       }
     } catch (error) {
-      // Registramos el error y mostramos una notificación de error
       console.error("Error al subir imagen:", error);
       toast.error("Error al subir la imagen.");
     } finally {
-      // Aseguramos que el estado de "subiendo imagen" se resetee, independientemente del resultado
       setUploadingImage(null);
     }
   };
 
-  // Función para manejar la eliminación de la imagen asociada a una tabla
   const handleDeleteImage = async (tableName: string) => {
-    // Pedimos confirmación al usuario
     const confirmDelete = window.confirm(
       `¿Estás seguro de eliminar la imagen de "${tableName}"?`
     );
 
     if (confirmDelete) {
       try {
-        // Llamamos al comando del backend para eliminar la imagen
         await invoke("delete_table_image", { dbName, tableName });
-        // Refrescamos la lista de tablas para que la imagen desaparezca
         setRefreshKey((prev) => prev + 1);
-        // Mostramos una notificación de éxito
         toast.success(`Imagen de "${tableName}" eliminada con éxito.`);
       } catch (error) {
-        // Registramos el error y mostramos una notificación de error
         console.error("Error al eliminar imagen:", error);
         toast.error("Error al eliminar la imagen.");
       }
     }
   };
 
-  // Función para manejar el éxito de importación/exportación
   const handleImportExportSuccess = () => {
-    // Refrescamos la lista de tablas
     setRefreshKey((prev) => prev + 1);
   };
 
-  // --- LÓGICA DE FILTRADO ---
-  // Filtramos las tablas basándonos en el término de búsqueda, sin importar mayúsculas/minúsculas
   const filteredTables = tableData.filter((table) =>
     table.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
-    // Contenedor principal de la aplicación, con diseño flex para barra lateral y contenido
-    <div className="flex h-screen bg-gray-900 font-sans">
-      {/* Barra lateral (Sidebar) */}
-      <aside className="w-64 bg-gray-800 border-r border-gray-700 p-5 flex flex-col">
-        {/* Título de la aplicación */}
-        <h2 className="text-2xl font-bold text-gray-100">UNEA</h2>
-
-        {/* Indicador de la base de datos actual */}
-        <div className="mt-6 bg-gray-700 p-3 rounded-lg flex items-center">
-          <span className="w-2.5 h-2.5 bg-green-500 rounded-full mr-3"></span>
-          <span className="font-semibold text-gray-300">{dbName}</span>
+    <div className="flex h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-800 text-gray-100">
+      <aside className="w-64 bg-gray-800/60 backdrop-blur-sm border-r border-gray-700/50 p-6 flex flex-col">
+        <div className="mb-8">
+          <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-blue-500 bg-clip-text text-transparent tracking-tight">
+            UNEA
+          </h2>
         </div>
 
-        {/* Sección de navegación principal */}
-        <nav className="mt-8 space-y-2">
-          {/* Enlace para volver al dashboard de tablas (activo) */}
+        <div className="bg-gray-900/50 border border-gray-700/50 rounded-xl p-4 flex items-center gap-3 mb-8 transition-all duration-200 hover:border-gray-600">
+          <span className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_10px] shadow-emerald-500/50"></span>
+          <span className="font-medium text-gray-300 truncate">{dbName}</span>
+        </div>
+
+        <nav className="flex-1 space-y-2">
           <Link
-            to="/" // Navega a la ruta principal, manteniendo el dbName si es necesario
+            to="/"
             state={{ dbName }}
-            className="flex items-center p-3 text-blue-400 bg-blue-900/50 rounded-lg font-semibold"
+            className="flex items-center gap-3 px-4 py-3 text-blue-400 bg-gradient-to-r from-blue-900/30 to-transparent border-l-4 border-blue-500 rounded-lg font-semibold transition-all duration-200"
           >
-            🗃️
-            <span className="ml-3">Base de datos</span>
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+            </svg>
+            <span>Base de datos</span>
           </Link>
-          {/* Enlace de ejemplo para "Acerca de" (esta ruta necesitaría ser definida en tu router) */}
           <Link
             to="/about"
-            className="flex items-center p-3 text-gray-400 hover:bg-gray-700 rounded-lg"
+            className="flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-gray-200 hover:bg-gray-700/50 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-600 focus:ring-inset"
           >
-            ❔<span className="ml-3">Acerca de</span>
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>Acerca de</span>
           </Link>
         </nav>
       </aside>
 
-      {/* Contenido principal de la página */}
-      <main className="flex-1 p-8 overflow-y-auto">
-        <header>
-          {/* Título de la sección, mostrando el nombre de la base de datos */}
-          <h1 className="text-4xl font-bold text-gray-100">
+      <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 hub-main-scroll">
+        <header className="mb-8 pb-6 border-b border-gray-700/50">
+          <h1 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">
             Tablas de {dbName}
           </h1>
-          {/* Descripción de la sección */}
-          <p className="text-gray-400 mt-1">Administrar tablas</p>
+          <p className="text-gray-400 mt-2 text-sm sm:text-base">
+            Selecciona una tabla para ver y gestionar sus registros
+          </p>
         </header>
 
-        {/* Barra de acciones (ej. búsqueda y gestión de datos) */}
-        <div className="mt-8 space-y-6">
-          <div className="flex items-center justify-between">
-            <div className="relative w-full max-w-xs">
-              {/* Icono de búsqueda dentro del campo de texto */}
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <svg
-                  className="h-5 w-5 text-gray-500"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
-                </svg>
-              </div>
-              {/* Campo de entrada para buscar tablas */}
+        <div className="mb-8 space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="relative w-full sm:max-w-md">
+              <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
               <input
                 type="text"
-                placeholder="Buscar..."
+                placeholder="Buscar tablas por nombre..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)} // Actualiza el término de búsqueda al escribir
-                className="block w-full pl-10 pr-3 py-2.5 border border-gray-600 rounded-lg bg-gray-700 text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-12 pr-4 py-3 bg-gray-800/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:border-gray-600"
               />
             </div>
           </div>
 
-          {/* Componente de Importar/Exportar */}
           <ImportarExportar
             dbName={dbName}
             tableList={tableData}
@@ -271,55 +201,110 @@ const InventarioDashboard = () => {
           />
         </div>
 
-        {/* Cuadrícula donde se muestran las tarjetas de las tablas */}
-        <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-          {/* Mostramos un mensaje si está cargando, si no hay tablas o si mostramos las tablas */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {loading ? (
-            <div className="flex flex-col items-center justify-center p-8 bg-gray-800 rounded-lg shadow-sm border border-gray-700 col-span-full">
-              {/* Spinner de carga (el mismo que ya usamos) */}
-              <svg
-                className="animate-spin h-8 w-8 text-blue-500 mb-4"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                ></circle>
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
+            <div className="flex flex-col items-center justify-center p-12 bg-gray-800/50 border border-gray-700 rounded-2xl col-span-full transition-all duration-300">
+              <svg className="animate-spin w-10 h-10 text-blue-500 mb-4" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              <p className="text-gray-400 text-lg">Cargando tablas...</p>
+              <p className="text-gray-400 text-lg font-medium">Cargando tablas...</p>
+              <p className="text-gray-500 text-sm mt-1">Conectando con la base de datos</p>
             </div>
           ) : filteredTables.length === 0 ? (
-            <p className="text-gray-400">No hay tablas disponibles.</p>
+            <div className="col-span-full">
+              {searchTerm ? (
+                <div className="text-center p-12 bg-gray-800/50 border border-gray-700 rounded-2xl transition-all duration-200 hover:border-gray-600">
+                  <svg className="w-16 h-16 mx-auto text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <h3 className="text-gray-300 text-lg font-semibold mb-1">No se encontraron tablas</h3>
+                  <p className="text-gray-500 text-sm">
+                    No hay tablas que coincidan con "{searchTerm}"
+                  </p>
+                </div>
+              ) : (
+                <div className="text-center p-12 bg-gray-800/50 border border-gray-700 rounded-2xl transition-all duration-200 hover:border-gray-600">
+                  <svg className="w-16 h-16 mx-auto text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                  </svg>
+                  <h3 className="text-gray-300 text-lg font-semibold mb-1">No hay tablas disponibles</h3>
+                  <p className="text-gray-500 text-sm">Esta base de datos aún no contiene tablas</p>
+                </div>
+              )}
+            </div>
           ) : (
-            // Iteramos sobre las tablas filtradas y mostramos un TableCard para cada una
             filteredTables.map((table) => (
               <TableCard
-                key={`${table.name}-${refreshKey}`} // Clave única para cada tarjeta (importante para React)
-                table={table} // Pasamos toda la información de la tabla
-                dbName={dbName} // Pasamos el nombre de la base de datos
-                uploadingImage={uploadingImage} // Indicamos si una imagen se está subiendo actualmente
-                onEdit={handleEditTable} // Pasamos la función para editar la tabla
-                onDelete={handleDeleteTable} // Pasamos la función para eliminar la tabla
-                onUploadImage={handleUploadImage} // Pasamos la función para subir una imagen
-                onDeleteImage={handleDeleteImage} // Pasamos la función para eliminar la imagen
-                refreshKey={refreshKey} // Pasamos la clave de refresco para ayudar a la caché de imágenes
+                key={`${table.name}-${refreshKey}`}
+                table={table}
+                dbName={dbName}
+                uploadingImage={uploadingImage}
+                onEdit={handleEditTable}
+                onDelete={handleDeleteTable}
+                onUploadImage={handleUploadImage}
+                onDeleteImage={handleDeleteImage}
+                refreshKey={refreshKey}
               />
             ))
           )}
         </div>
       </main>
-      {/* Componente para mostrar notificaciones tipo "toast" */}
       <Toaster position="bottom-right" reverseOrder={false} />
+      <style>{`
+        /* Scrollbar styles matching consulta_tabla_front.tsx */
+        .hub-main-scroll {
+          scrollbar-width: auto;
+          scrollbar-color: #2563eb #374151;
+        }
+
+        /* Scrollbar más grueso y visible para WebKit */
+        .hub-main-scroll::-webkit-scrollbar {
+          width: 18px;
+          height: 18px;
+        }
+
+        .hub-main-scroll::-webkit-scrollbar-track {
+          background: #374151;
+          border-left: 1px solid #4b5563;
+        }
+
+        .hub-main-scroll::-webkit-scrollbar-thumb {
+          background: #2563eb;
+          border-radius: 9px;
+          border: 4px solid #374151;
+          box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .hub-main-scroll::-webkit-scrollbar-thumb:hover {
+          background: #3b82f6;
+        }
+
+        /* Botones de scroll opcionales para mejor UX */
+        .hub-main-scroll::-webkit-scrollbar-button:single-button {
+          display: block;
+          height: 16px;
+          width: 16px;
+          background: #374151;
+          border: 1px solid #4b5563;
+        }
+
+        .hub-main-scroll::-webkit-scrollbar-button:single-button:hover {
+          background: #4b5563;
+        }
+
+        .hub-main-scroll::-webkit-scrollbar-button:single-button:vertical:decrement {
+          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23e5e7eb' d='M6 3L1 8h10z'/%3E%3C/svg%3E");
+          background-repeat: no-repeat;
+          background-position: center;
+        }
+
+        .hub-main-scroll::-webkit-scrollbar-button:single-button:vertical:increment {
+          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23e5e7eb' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+          background-repeat: no-repeat;
+          background-position: center;
+        }
+      `}</style>
     </div>
   );
 };

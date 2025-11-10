@@ -59,7 +59,7 @@ const TableCard: React.FC<TableCardProps> = ({
               className="w-full h-full object-cover"
               // Si ocurre un error al cargar la imagen, activamos el estado de error
               onError={() => setImageLoadError(true)}
-              // onLoad={() => console.log("Imagen cargada exitosamente:", table.name)} // Para depuración
+            // onLoad={() => console.log("Imagen cargada exitosamente:", table.name)} // Para depuración
             />
           </>
         ) : (

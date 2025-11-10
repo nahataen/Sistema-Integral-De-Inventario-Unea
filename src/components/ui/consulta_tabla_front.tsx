@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { invoke } from '@tauri-apps/api/tauri';
+import { useNavigate } from 'react-router-dom';
 
 // Define la estructura de los datos de la tabla.
 interface TableData {
@@ -10,33 +11,40 @@ interface TableData {
 
 // Define las propiedades del componente.
 interface ConsultaTablaFrontProps {
-    dbName: string;
-    tableName: string;
-    selectedRowId: number | null;
-    onRowSelect: (rowId: number) => void;
-    onSaveRow?: (pk: { name: string, value: any }, updatedData: Record<string, any>) => Promise<boolean>;
-    searchTerm?: string;
-    sortOrder?: string;
-    onTableUpdate?: () => void;
+     dbName: string;
+     tableName: string;
+     selectedRowId: number | null;
+     onRowSelect: (rowId: number) => void;
+     onSaveRow?: (pk: { name: string, value: any }, updatedData: Record<string, any>) => Promise<boolean>;
+     searchTerm?: string;
+     sortOrder?: string;
+     onTableUpdate?: () => void;
+     onBack?: () => void; // Nueva prop para navegación hacia atrás
 }
 
 const ConsultaTablaFront: React.FC<ConsultaTablaFrontProps> = ({
-   dbName,
-   tableName,
-   selectedRowId,
-   onRowSelect,
-   onSaveRow,
-   searchTerm = '',
+    dbName,
+    tableName,
+    selectedRowId,
+    onRowSelect,
+    onSaveRow,
+    searchTerm = '',
+    onBack,
 }) => {
+   const navigate = useNavigate();
 
-  const [tableData, setTableData] = useState<TableData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [editingRowId, setEditingRowId] = useState<number | null>(null);
-  const [editData, setEditData] = useState<Record<string, any>>({});
-  const [sortColumn] = useState<string>('');
-  const [sortDirection] = useState<'asc' | 'desc'>('asc');
-  // Note: Sorting functionality can be implemented later if needed
+   const [tableData, setTableData] = useState<TableData | null>(null);
+   const [loading, setLoading] = useState(true);
+   const [error, setError] = useState<string | null>(null);
+   const [editingRowId, setEditingRowId] = useState<number | null>(null);
+   const [editData, setEditData] = useState<Record<string, any>>({});
+   const [sortColumn] = useState<string>('');
+   const [sortDirection] = useState<'asc' | 'desc'>('asc');
+   // Note: Sorting functionality can be implemented later if needed
+
+   // State for new record modal
+   const [showNewRecordModal, setShowNewRecordModal] = useState(false);
+   const [newRecordData, setNewRecordData] = useState<Record<string, any>>({});
 
   // Carga los datos de la tabla desde el backend.
   const fetchTableData = async () => {
@@ -117,6 +125,83 @@ const ConsultaTablaFront: React.FC<ConsultaTablaFrontProps> = ({
     setEditData({});
   };
 
+  // Abre el modal para nuevo registro.
+  const handleOpenNewRecordModal = () => {
+    // Inicializa el estado con valores vacíos para cada columna, pero prellena zona y campus
+    const initialData: Record<string, any> = {};
+    if (tableData) {
+      tableData.columns.forEach(column => {
+        if (column.toLowerCase() === 'zona') {
+          initialData[column] = 'centro'; // Valor fijo para zona
+        } else if (column.toLowerCase() === 'campus') {
+          initialData[column] = 'florido'; // Valor fijo para campus
+        } else {
+          initialData[column] = '';
+        }
+      });
+    }
+    setNewRecordData(initialData);
+    setShowNewRecordModal(true);
+  };
+
+  // Cierra el modal para nuevo registro.
+  const handleCloseNewRecordModal = () => {
+    setShowNewRecordModal(false);
+    setNewRecordData({});
+  };
+
+  // Maneja cambios en los inputs del nuevo registro.
+  const handleNewRecordInputChange = (column: string, value: string) => {
+    setNewRecordData(prev => {
+      const originalValue = prev[column];
+      let finalValue: any = value;
+
+      // Intenta preservar el tipo numérico si el original era un número.
+      if (typeof originalValue === 'number') {
+        const parsedNumber = parseFloat(value);
+        if (!isNaN(parsedNumber) && value.trim() !== '') {
+          finalValue = parsedNumber;
+        }
+      }
+
+      return { ...prev, [column]: finalValue };
+    });
+  };
+
+  // Envía el nuevo registro al backend.
+  const handleSubmitNewRecord = async () => {
+    if (!tableData) return;
+
+    // Convierte strings vacíos a null para la base de datos, pero mantiene zona y campus
+    const cleanedData: Record<string, any> = {};
+    for (const [key, value] of Object.entries(newRecordData)) {
+      if (key.toLowerCase() === 'zona' || key.toLowerCase() === 'campus') {
+        // Siempre incluye zona y campus, incluso si están vacíos (aunque no deberían estarlo)
+        cleanedData[key] = value;
+      } else {
+        // Otros campos: vacío = null
+        cleanedData[key] = value === '' ? null : value;
+      }
+    }
+
+    try {
+      await invoke('crear_registro', {
+        registro: {
+          db_name: dbName,
+          table_name: tableName,
+          data: cleanedData,
+        },
+      });
+
+      // Recarga los datos después de crear el registro.
+      await fetchTableData();
+      handleCloseNewRecordModal();
+      alert('Registro creado exitosamente');
+    } catch (error) {
+      alert('Error al crear el registro: ' + String(error));
+    }
+  };
+
   // Maneja los cambios en los inputs de edición.
   const handleInputChange = (column: string, value: string) => {
     setEditData(prev => {
@@ -185,9 +270,48 @@ const ConsultaTablaFront: React.FC<ConsultaTablaFrontProps> = ({
   // Renderizado del componente.
   return (
     <>
+      {/* Modal para nuevo registro */}
+      {showNewRecordModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h3 className="modal-title">Crear Nuevo Registro</h3>
+            <div className="modal-body">
+              {tableData?.columns.map(column => {
+                const isFixedField = column.toLowerCase() === 'zona' || column.toLowerCase() === 'campus';
+                return (
+                  <div key={column} className="form-group">
+                    <label className="form-label">{column}:</label>
+                    <input
+                      type="text"
+                      value={newRecordData[column] ?? ''}
+                      onChange={(e) => handleNewRecordInputChange(column, e.target.value)}
+                      className="form-input"
+                      placeholder={isFixedField ? 'Valor fijo' : `Ingrese ${column}`}
+                      disabled={isFixedField} // Deshabilita zona y campus
+                      readOnly={isFixedField} // Hace que sean solo lectura
+                    />
+                  </div>
+                );
+              })}
+            </div>
+            <div className="modal-footer">
+              <button onClick={handleSubmitNewRecord} className="btn-save">
+                <span aria-hidden="true">✓</span> Crear Registro
+              </button>
+              <button onClick={handleCloseNewRecordModal} className="btn-cancel">
+                <span aria-hidden="true">✗</span> Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
 <div className="table-container">
   <div className="table-header">
-    <h2 className="table-title">{tableData.table_name}</h2>
+    <div className="header-content">
+
+      <h2 className="table-title">{tableData.table_name}</h2>
+    </div>
   </div>
 
   <div className="table-body-wrapper">
@@ -231,7 +355,7 @@ const ConsultaTablaFront: React.FC<ConsultaTablaFrontProps> = ({
     </table>
   </div>
 
-  <div className="table-footer">
+<div className="table-footer">
     {editingRowId !== null ? (
       <div className="edit-controls">
         <button
@@ -250,19 +374,27 @@ const ConsultaTablaFront: React.FC<ConsultaTablaFrontProps> = ({
         </button>
       </div>
     ) : (
-      <button
-        onClick={() => {
-          if (selectedRowId !== null) {
-            const selectedRow = processedRows[selectedRowId];
-            setEditData({ ...selectedRow });
-            setEditingRowId(selectedRowId);
-          }
-        }}
-        disabled={selectedRowId === null}
-        className="edit-button"
-      >
-        Editar Fila Seleccionada
-      </button>
+      <div className="edit-controls">
+        <button
+          onClick={() => {
+            if (selectedRowId !== null) {
+              const selectedRow = processedRows[selectedRowId];
+              setEditData({ ...selectedRow });
+              setEditingRowId(selectedRowId);
+            }
+          }}
+          disabled={selectedRowId === null}
+          className="edit-button"
+        >
+          Editar Fila Seleccionada
+        </button>
+        <button
+          onClick={handleOpenNewRecordModal}
+          className="edit-button"
+        >
+          Nuevo Registro
+        </button>
+      </div>
     )}
   </div>
 </div>
@@ -309,6 +441,38 @@ const ConsultaTablaFront: React.FC<ConsultaTablaFrontProps> = ({
     background-color: var(--color-header);
   }
 
+  .header-content {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+  }
+
+  .back-button {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    background-color: var(--color-selected);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-xs);
+    white-space: nowrap;
+  }
+
+  .back-button:hover {
+    background-color: #1d4ed8;
+    transform: translateY(-1px);
+  }
+
+  .back-button:active {
+    transform: translateY(0);
+  }
+
   .table-title {
     color: white;
     font-weight: 700;
@@ -318,6 +482,7 @@ const ConsultaTablaFront: React.FC<ConsultaTablaFrontProps> = ({
     text-overflow: ellipsis;
     white-space: nowrap;
     font-size: clamp(1rem, 2vw, 1.5rem);
+    flex: 1;
   }
 
   .table-body-wrapper {
@@ -632,6 +797,99 @@ const ConsultaTablaFront: React.FC<ConsultaTablaFrontProps> = ({
     .table-body-wrapper {
       overflow: visible;
     }
+  }
+
+  /* Modal Styles */
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+
+  .modal-content {
+    background: linear-gradient(135deg, var(--color-bg-start) 0%, var(--color-bg-end) 100%);
+    border-radius: 12px;
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow);
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .modal-title {
+    color: white;
+    font-weight: 700;
+    font-size: 1.25rem;
+    margin: 0;
+    padding: var(--spacing-lg);
+    border-bottom: 1px solid var(--color-border);
+    background-color: var(--color-header);
+  }
+
+  .modal-body {
+    padding: var(--spacing-lg);
+    overflow-y: auto;
+    flex: 1;
+  }
+
+  .form-group {
+    margin-bottom: var(--spacing-md);
+  }
+
+  .form-label {
+    display: block;
+    color: var(--color-text);
+    font-weight: 600;
+    margin-bottom: var(--spacing-xs);
+    font-size: 0.875rem;
+  }
+
+  .form-input {
+    width: 100%;
+    padding: var(--spacing-sm) var(--spacing-md);
+    background-color: var(--color-input-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    color: white;
+    font-size: 0.875rem;
+    box-sizing: border-box;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .form-input:focus:not(:disabled) {
+    outline: none;
+    border-color: var(--color-input-focus);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+  }
+
+  .form-input:disabled {
+    background-color: var(--color-header);
+    color: var(--color-text);
+    cursor: not-allowed;
+    opacity: 0.8;
+  }
+
+  .form-input::placeholder {
+    color: #9ca3af;
+  }
+
+  .modal-footer {
+    padding: var(--spacing-lg);
+    border-top: 1px solid var(--color-border);
+    background-color: var(--color-header);
+    display: flex;
+    gap: var(--spacing-md);
+    justify-content: flex-end;
   }
 `}</style>
   </>

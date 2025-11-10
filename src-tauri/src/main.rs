@@ -8,7 +8,7 @@ mod editar;
 mod io_utils; // NUEVO: Declara el módulo compartido.
 mod exportar_tabla; // NUEVO: Declara el módulo de exportación.
 mod importar_tabla; // NUEVO: Declara el módulo de importación.
-
+mod crear_registro; // <--- NUEVO
 use tauri::Builder;
 
 use database_manager::{
@@ -52,6 +52,7 @@ fn main() {
                 exportar_tabla::export_table_to_json,
                 importar_tabla::import_table_from_json,
                 importar_tabla::import_table_from_json_with_options,
+                crear_registro::crear_registro, // <--- NUEVO
             ]
         )
         .run(tauri::generate_context!())
