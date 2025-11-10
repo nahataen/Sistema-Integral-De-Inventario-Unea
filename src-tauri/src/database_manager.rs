@@ -6,6 +6,7 @@
 /// - Importar bases de datos desde ubicaciones externas
 /// - Exportar bases de datos a ubicaciones elegidas por el usuario
 /// - Eliminar bases de datos permanentemente
+/// - Abrir el directorio de bases de datos en el explorador nativo
 ///
 /// Todas las funciones trabajan con archivos `.db` y `.sqlite`
 /// y están expuestas como comandos Tauri para el frontend.
@@ -19,22 +20,21 @@ use rusqlite::Result;                  // Manejo de resultados de SQLite
 use serde::{Deserialize, Serialize};   // Serialización / deserialización JSON
 use std::fs;                           // Operaciones con archivos
 use std::path::PathBuf;                // Manejo seguro de rutas
-use std::process;                      // Ejecución de comandos del sistema
+use std::process::Command;             // Ejecución de comandos del sistema (CORREGIDO)
 use chrono::{TimeDelta, Utc};          // Manejo de fechas y tiempos
 
 /* =========================================================================
    Estructuras de datos
    ========================================================================= */
 
-/// Información de una base de datos
-/// Se envía al frontend en formato JSON
+/// Información de una base de datos que se envía al frontend en formato JSON
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DatabaseInfo {
     /// Nombre de la base de datos (sin extensión)
     pub name: String,
     /// Estado actual: "En uso" o "Inactivo"
     pub status: String,
-    /// Tamaño del archivo (ej: "5 MB")
+    /// Tamaño del archivo formateado automáticamente (ej: "512 KB", "10 MB")
     pub size: String,
     /// Fecha de última modificación (YYYY-MM-DD)
     pub last_mod: String,
@@ -52,10 +52,36 @@ pub struct AppState {
 }
 
 /* =========================================================================
+   Funciones auxiliares (NUEVA - para corregir tamaños)
+   ========================================================================= */
+
+/// Formatea bytes a unidad legible para humanos con precisión inteligente
+fn format_file_size(bytes: u64) -> String {
+    const UNITS: &[&str] = &["B", "KB", "MB", "GB", "TB"];
+    let mut size = bytes as f64;
+    let mut unit_index = 0;
+
+    // Convertir a la unidad apropiada
+    while size >= 1024.0 && unit_index < UNITS.len() - 1 {
+        size /= 1024.0;
+        unit_index += 1;
+    }
+
+    // Determinar precisión según el tamaño
+    let precision = match unit_index {
+        0 => 0, // Bytes: sin decimales
+        _ if size < 10.0 => 2, // < 10: 2 decimales
+        _ => 1, // ≥ 10: 1 decimal
+    };
+
+    format!("{:.prec$} {}", size, UNITS[unit_index], prec = precision)
+}
+
+/* =========================================================================
    Funciones expuestas como comandos Tauri
    ========================================================================= */
 
-/// Lista todas las bases de datos disponibles
+/// Listar todas las bases de datos disponibles
 #[tauri::command]
 pub fn list_databases(state: State<AppState>) -> Result<Vec<DatabaseInfo>, String> {
     let mut dbs = Vec::new();
@@ -74,15 +100,18 @@ pub fn list_databases(state: State<AppState>) -> Result<Vec<DatabaseInfo>, Strin
         if let Some(ext) = path.extension().and_then(|s| s.to_str()) {
             if ext == "db" || ext == "sqlite" {
                 let metadata = fs::metadata(&path).map_err(|e| e.to_string())?;
-                let size = (metadata.len() as f64 / 1_048_576.0).round(); // MB
-                let last_mod_secs = metadata
-                    .modified()
+                let file_size_bytes = metadata.len();
+
+                // Calcular fecha de modificación
+                let modified_duration = metadata.modified()
                     .map_err(|e| e.to_string())?
                     .elapsed()
                     .map_err(|e| e.to_string())?
                     .as_secs();
 
-                let status = if Some(path.file_name().unwrap().to_str().unwrap()) == state.active_db.as_deref() {
+                // Determinar estado
+                let file_name = path.file_name().unwrap().to_str().unwrap();
+                let status = if Some(file_name) == state.active_db.as_deref() {
                     "En uso".to_string()
                 } else {
                     "Inactivo".to_string()
@@ -91,9 +120,9 @@ pub fn list_databases(state: State<AppState>) -> Result<Vec<DatabaseInfo>, Strin
                 dbs.push(DatabaseInfo {
                     name: path.file_stem().unwrap().to_str().unwrap().to_string(),
                     status,
-                    size: format!("{:.0} MB", size),
+                    size: format_file_size(file_size_bytes), // ✅ CORREGIDO: formateo inteligente
                     last_mod: Utc::now()
-                        .checked_sub_signed(TimeDelta::new(last_mod_secs as i64, 0).expect("Invalid TimeDelta"))
+                        .checked_sub_signed(TimeDelta::seconds(modified_duration as i64))
                         .map_or_else(|| "N/A".to_string(), |d| d.format("%Y-%m-%d").to_string()),
                     path: path.to_string_lossy().to_string(),
                 });
@@ -104,7 +133,7 @@ pub fn list_databases(state: State<AppState>) -> Result<Vec<DatabaseInfo>, Strin
     Ok(dbs)
 }
 
-/// Importa una base de datos desde una ubicación externa
+/// Importar una base de datos desde una ubicación externa
 #[tauri::command]
 pub fn import_database(state: State<AppState>, filepath: String) -> Result<(), String> {
     let source_path = PathBuf::from(&filepath);
@@ -139,7 +168,7 @@ pub fn import_database(state: State<AppState>, filepath: String) -> Result<(), S
     Ok(())
 }
 
-/// Exporta una base de datos a una ubicación externa
+/// Exportar una base de datos a una ubicación externa
 #[tauri::command]
 pub fn export_database(state: State<AppState>, name: String, target_path: String) -> Result<(), String> {
     let db_path = state.db_dir.join(format!("{}.db", name));
@@ -151,7 +180,7 @@ pub fn export_database(state: State<AppState>, name: String, target_path: String
     Ok(())
 }
 
-/// Elimina permanentemente una base de datos
+/// Eliminar permanentemente una base de datos
 #[tauri::command]
 pub fn delete_database(state: State<AppState>, name: String, confirmed: bool) -> Result<(), String> {
     if !confirmed {
@@ -167,6 +196,7 @@ pub fn delete_database(state: State<AppState>, name: String, confirmed: bool) ->
     Ok(())
 }
 
+
 /// Abre el directorio que contiene una base de datos en el explorador de archivos
 #[tauri::command]
 pub fn open_directory(path: String) -> Result<(), String> {
@@ -180,19 +210,19 @@ pub fn open_directory(path: String) -> Result<(), String> {
     }
 
     #[cfg(target_os = "windows")]
-    process::Command::new("cmd")
+    Command::new("cmd")
         .args(&["/c", "start", "", &dir_path.to_string_lossy()])
         .spawn()
         .map_err(|e| format!("Error al abrir el explorador de archivos: {}", e))?;
 
     #[cfg(target_os = "macos")]
-    process::Command::new("open")
+    Command::new("open")
         .arg(&dir_path)
         .spawn()
         .map_err(|e| format!("Error al abrir Finder: {}", e))?;
 
     #[cfg(target_os = "linux")]
-    process::Command::new("xdg-open")
+    Command::new("xdg-open")
         .arg(&dir_path)
         .spawn()
         .map_err(|e| format!("Error al abrir el administrador de archivos: {}", e))?;

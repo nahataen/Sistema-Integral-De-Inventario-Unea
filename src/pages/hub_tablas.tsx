@@ -21,6 +21,8 @@ const InventarioDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
   const [uploadingImage, setUploadingImage] = useState<string | null>(null);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleteCandidate, setDeleteCandidate] = useState<string | null>(null);
 
   const loadTables = useCallback(async () => {
     try {
@@ -47,24 +49,28 @@ const InventarioDashboard = () => {
     navigate("/pagina", { state: { tableName, dbName } });
   };
 
-  const handleDeleteTable = async (tableName: string) => {
-    const confirmDelete = window.confirm(
-      `¿Estás seguro de eliminar la tabla "${tableName}"? Esta acción es irreversible.`
-    );
-    if (confirmDelete) {
+  const handleDeleteTable = (tableName: string) => {
+    setDeleteCandidate(tableName);
+    setShowDeleteDialog(true);
+  };
+
+  const confirmDelete = async () => {
+    if (deleteCandidate) {
       try {
         await invoke("delete_table", {
           dbName,
-          tableName,
+          tableName: deleteCandidate,
           confirmDelete: true,
         });
         setRefreshKey((prev) => prev + 1);
-        toast.success(`Tabla "${tableName}" eliminada con éxito.`);
+        toast.success(`Tabla "${deleteCandidate}" eliminada con éxito.`);
       } catch (error) {
         console.error("Error al eliminar tabla:", error);
         toast.error("Error al eliminar la tabla.");
       }
     }
+    setShowDeleteDialog(false);
+    setDeleteCandidate(null);
   };
 
   const handleUploadImage = async (tableName: string) => {
@@ -250,6 +256,18 @@ const InventarioDashboard = () => {
           )}
         </div>
       </main>
+      {showDeleteDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-gray-800 p-6 rounded-lg border border-gray-600">
+            <h3 className="text-white text-lg mb-4">Confirmar eliminación</h3>
+            <p className="text-gray-300 mb-6">¿Estás seguro de eliminar "{deleteCandidate}"?</p>
+            <div className="flex space-x-4">
+              <button onClick={confirmDelete} className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">Eliminar</button>
+              <button onClick={() => setShowDeleteDialog(false)} className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">Cancelar</button>
+            </div>
+          </div>
+        </div>
+      )}
       <Toaster position="bottom-right" reverseOrder={false} />
       <style>{`
         /* Scrollbar styles matching consulta_tabla_front.tsx */
