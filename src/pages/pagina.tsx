@@ -37,6 +37,26 @@ const Pagina = () => {
     }
   };
 
+  const handleDeleteRow = async (pk: { name: string, value: any }): Promise<boolean> => {
+    try {
+      if (!dbName || !tableName) throw new Error('Nombre de base de datos o tabla no especificado.');
+      if (!pk || pk.name === undefined || pk.value === undefined) throw new Error('Clave primaria inválida.');
+
+      const result = await invoke('delete_table_row', {
+        dbName: dbName.trim(),
+        tableName: tableName.trim(),
+        pkColumn: pk.name,
+        pkValue: pk.value,
+      });
+
+      return result === true;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      alert('Error al eliminar la fila:\n' + errorMessage);
+      return false;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800 text-gray-100">
       <header className="bg-gray-800/50 backdrop-blur-sm border-b border-gray-700/50">
@@ -87,6 +107,7 @@ const Pagina = () => {
               selectedRowId={selectedRowId}
               onRowSelect={handleRowSelect}
               onSaveRow={handleSaveRow}
+              onDeleteRow={handleDeleteRow}
               searchTerm={searchTerm}
             />
           </div>

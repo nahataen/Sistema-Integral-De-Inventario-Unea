@@ -45,8 +45,14 @@ pub fn consulta_tabla(state: State<AppState>, db_name: String, table_name: Strin
       .collect::<Result<Vec<String>, _>>()
       .map_err(|e| format!("Error al obtener columnas: {}", e))?;
 
-    // Consultar los datos de la tabla
-    let query = format!("SELECT * FROM {}", table_name);
+    // Consultar los datos de la tabla ordenados por "No." ascendente si existe la columna
+    let has_no_column = columns.iter().any(|col| col == "No.");
+    let order_clause = if has_no_column {
+        " ORDER BY CAST(\"No.\" AS INTEGER) ASC"
+    } else {
+        ""
+    };
+    let query = format!("SELECT * FROM {}{}", table_name, order_clause);
     let mut stmt = conn.prepare(&query)
         .map_err(|e| format!("Error al preparar la consulta de datos: {}", e))?;
 

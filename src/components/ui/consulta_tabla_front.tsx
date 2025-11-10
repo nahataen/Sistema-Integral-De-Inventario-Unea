@@ -11,25 +11,27 @@ interface TableData {
 
 // Define las propiedades del componente.
 interface ConsultaTablaFrontProps {
-     dbName: string;
-     tableName: string;
-     selectedRowId: number | null;
-     onRowSelect: (rowId: number) => void;
-     onSaveRow?: (pk: { name: string, value: any }, updatedData: Record<string, any>) => Promise<boolean>;
-     searchTerm?: string;
-     sortOrder?: string;
-     onTableUpdate?: () => void;
-     onBack?: () => void; // Nueva prop para navegación hacia atrás
+      dbName: string;
+      tableName: string;
+      selectedRowId: number | null;
+      onRowSelect: (rowId: number) => void;
+      onSaveRow?: (pk: { name: string, value: any }, updatedData: Record<string, any>) => Promise<boolean>;
+      onDeleteRow?: (pk: { name: string, value: any }) => Promise<boolean>;
+      searchTerm?: string;
+      sortOrder?: string;
+      onTableUpdate?: () => void;
+      onBack?: () => void; // Nueva prop para navegación hacia atrás
 }
 
 const ConsultaTablaFront: React.FC<ConsultaTablaFrontProps> = ({
-    dbName,
-    tableName,
-    selectedRowId,
-    onRowSelect,
-    onSaveRow,
-    searchTerm = '',
-    onBack,
+     dbName,
+     tableName,
+     selectedRowId,
+     onRowSelect,
+     onSaveRow,
+     onDeleteRow,
+     searchTerm = '',
+     onBack,
 }) => {
    const navigate = useNavigate();
 
@@ -43,8 +45,11 @@ const ConsultaTablaFront: React.FC<ConsultaTablaFrontProps> = ({
    // Note: Sorting functionality can be implemented later if needed
 
    // State for new record modal
-   const [showNewRecordModal, setShowNewRecordModal] = useState(false);
-   const [newRecordData, setNewRecordData] = useState<Record<string, any>>({});
+    const [showNewRecordModal, setShowNewRecordModal] = useState(false);
+    const [newRecordData, setNewRecordData] = useState<Record<string, any>>({});
+
+    // State for delete confirmation modal
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   // Carga los datos de la tabla desde el backend.
   const fetchTableData = async () => {
@@ -86,17 +91,33 @@ const ConsultaTablaFront: React.FC<ConsultaTablaFrontProps> = ({
       return;
     }
 
-    // Asume que la primera columna es la clave primaria (PK).
-    const pkColumn = tableData.columns[0];
-    const pkValue = editData[pkColumn];
+    // Determina la columna de clave primaria (PK).
+    let pkColumn = tableData.columns[0]; // Asume la primera por defecto
+    let pkValue = editData[pkColumn];
+
+    // Si la PK es "No." y está vacía, busca una alternativa
+    if ((pkColumn.toLowerCase() === 'no.' || pkColumn.toLowerCase() === 'no') && (pkValue === '' || pkValue === null || pkValue === undefined)) {
+      const possiblePkColumns = ['id', 'ID', 'pk', 'PK', 'rowid', 'ROWID'];
+      for (const col of possiblePkColumns) {
+        if (tableData.columns.includes(col) && editData[col] !== '' && editData[col] !== null && editData[col] !== undefined) {
+          pkColumn = col;
+          pkValue = editData[col];
+          break;
+        }
+      }
+    }
 
     if (pkValue === undefined) {
-      alert(`Error: No se pudo encontrar el valor de la clave primaria ('${pkColumn}').`);
+      alert(`Error: No se pudo encontrar el valor de la clave primaria.`);
       return;
     }
 
     const updates = { ...editData };
     delete updates[pkColumn]; // Excluye la PK de los datos a actualizar.
+
+    // No permitir actualizar el campo "No." (auto-incrementable)
+    delete updates['No.'];
+    delete updates['no'];
 
     // Convierte strings vacíos a null para la base de datos.
     const cleanedUpdates: Record<string, any> = {};
@@ -135,6 +156,9 @@ const ConsultaTablaFront: React.FC<ConsultaTablaFrontProps> = ({
           initialData[column] = 'centro'; // Valor fijo para zona
         } else if (column.toLowerCase() === 'campus') {
           initialData[column] = 'florido'; // Valor fijo para campus
+        } else if (column.toLowerCase() === 'no.' || column.toLowerCase() === 'no') {
+          // No incluir la columna "No." en el formulario - será auto-incrementable
+          return;
         } else {
           initialData[column] = '';
         }
@@ -148,6 +172,68 @@ const ConsultaTablaFront: React.FC<ConsultaTablaFrontProps> = ({
   const handleCloseNewRecordModal = () => {
     setShowNewRecordModal(false);
     setNewRecordData({});
+  };
+
+  // Abre el modal de confirmación para eliminar fila.
+  const handleOpenDeleteModal = () => {
+    setShowDeleteModal(true);
+  };
+
+  // Cierra el modal de confirmación para eliminar fila.
+  const handleCloseDeleteModal = () => {
+    setShowDeleteModal(false);
+  };
+
+  // Confirma y ejecuta la eliminación de la fila seleccionada.
+  const handleConfirmDelete = async () => {
+    if (selectedRowId === null || !onDeleteRow) {
+      alert('Error: No hay fila seleccionada o función de eliminación no disponible.');
+      return;
+    }
+
+    const selectedRow = processedRows[selectedRowId];
+    const pkColumn = tableData?.columns[0] || 'id'; // Usa 'id' como fallback si no hay columnas definidas
+    let pkValue = selectedRow[pkColumn];
+
+    // Si el valor de la PK es una cadena vacía, intenta usar el índice de la fila como ID
+    if (pkValue === '' || pkValue === null || pkValue === undefined) {
+      // Busca una columna que pueda ser la PK real (id, ID, pk, etc.)
+      const possiblePkColumns = ['id', 'ID', 'pk', 'PK', 'rowid', 'ROWID'];
+      let foundPkValue = null;
+
+      for (const col of possiblePkColumns) {
+        if (tableData?.columns.includes(col) && selectedRow[col] !== '' && selectedRow[col] !== null && selectedRow[col] !== undefined) {
+          foundPkValue = selectedRow[col];
+          console.log(`Usando columna alternativa ${col} con valor:`, foundPkValue);
+          break;
+        }
+      }
+
+      if (foundPkValue !== null) {
+        pkValue = foundPkValue;
+      } else {
+        pkValue = selectedRowId + 1; // Último recurso: asume IDs secuenciales
+        console.log('No se encontró PK alternativa, usando rowId + 1:', pkValue);
+      }
+    }
+
+    console.log('Intentando eliminar fila:', { pkColumn, pkValue, selectedRow, originalPkValue: selectedRow[pkColumn] });
+
+    // Intenta eliminar independientemente de si tiene datos registrados o no
+    try {
+      const success = await onDeleteRow({ name: pkColumn, value: pkValue });
+
+      if (success) {
+        await fetchTableData(); // Recarga los datos si la eliminación fue exitosa.
+        setShowDeleteModal(false);
+        onRowSelect(-1); // Deselecciona la fila
+        alert('Fila eliminada exitosamente.');
+      } else {
+        alert('Error al eliminar la fila.');
+      }
+    } catch (error) {
+      alert('Error al eliminar la fila: ' + String(error));
+    }
   };
 
   // Maneja cambios en los inputs del nuevo registro.
@@ -184,13 +270,15 @@ const ConsultaTablaFront: React.FC<ConsultaTablaFrontProps> = ({
       }
     }
 
+    // No incluir el campo "No." en los datos a enviar - será auto-generado por la BD
+    delete cleanedData['No.'];
+    delete cleanedData['no'];
+
     try {
-      await invoke('crear_registro', {
-        registro: {
-          db_name: dbName,
-          table_name: tableName,
-          data: cleanedData,
-        },
+      await invoke('crear_registro_con_auto_incremento', {
+        dbName: dbName,
+        tableName: tableName,
+        data: cleanedData,
       });
 
       // Recarga los datos después de crear el registro.
@@ -270,6 +358,26 @@ const ConsultaTablaFront: React.FC<ConsultaTablaFrontProps> = ({
   // Renderizado del componente.
   return (
     <>
+      {/* Modal de confirmación para eliminar fila */}
+      {showDeleteModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h3 className="modal-title">Confirmar eliminación</h3>
+            <div className="modal-body">
+              <p className="text-gray-300">¿Estás seguro de eliminar esta fila? Esta acción no se puede deshacer.</p>
+            </div>
+            <div className="modal-footer">
+              <button onClick={handleConfirmDelete} className="btn-danger">
+                <span aria-hidden="true">🗑️</span> Eliminar
+              </button>
+              <button onClick={handleCloseDeleteModal} className="btn-cancel">
+                <span aria-hidden="true">✗</span> Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Modal para nuevo registro */}
       {showNewRecordModal && (
         <div className="modal-overlay">
@@ -278,6 +386,11 @@ const ConsultaTablaFront: React.FC<ConsultaTablaFrontProps> = ({
             <div className="modal-body">
               {tableData?.columns.map(column => {
                 const isFixedField = column.toLowerCase() === 'zona' || column.toLowerCase() === 'campus';
+                const isAutoIncrementField = column.toLowerCase() === 'no.' || column.toLowerCase() === 'no';
+
+                // No mostrar el campo "No." en el formulario
+                if (isAutoIncrementField) return null;
+
                 return (
                   <div key={column} className="form-group">
                     <label className="form-label">{column}:</label>
@@ -332,23 +445,33 @@ const ConsultaTablaFront: React.FC<ConsultaTablaFrontProps> = ({
             className={`table-row ${selectedRowId === rowIndex ? 'selected' : ''}`}
             onClick={() => onRowSelect(rowIndex)}
           >
-            {tableData.columns.map((column) => (
-              <td key={column} className="data-cell">
-                {editingRowId === rowIndex ? (
-                  <input
-                    type="text"
-                    value={editData[column] ?? ''}
-                    onChange={(e) => handleInputChange(column, e.target.value)}
-                    className="edit-input"
-                    aria-label={`Editar ${column}`}
-                  />
-                ) : (
-                  <div className="cell-content" title={String(row[column] ?? 'NULL')}>
-                    {String(row[column] ?? 'NULL')}
-                  </div>
-                )}
-              </td>
-            ))}
+            {tableData.columns.map((column) => {
+              const isAutoIncrementField = column.toLowerCase() === 'no.' || column.toLowerCase() === 'no';
+              return (
+                <td key={column} className="data-cell">
+                  {editingRowId === rowIndex ? (
+                    isAutoIncrementField ? (
+                      // Campo de solo lectura para "No."
+                      <div className="cell-content" title={String(row[column] ?? 'NULL')}>
+                        {String(row[column] ?? 'NULL')}
+                      </div>
+                    ) : (
+                      <input
+                        type="text"
+                        value={editData[column] ?? ''}
+                        onChange={(e) => handleInputChange(column, e.target.value)}
+                        className="edit-input"
+                        aria-label={`Editar ${column}`}
+                      />
+                    )
+                  ) : (
+                    <div className="cell-content" title={String(row[column] ?? 'NULL')}>
+                      {String(row[column] ?? 'NULL')}
+                    </div>
+                  )}
+                </td>
+              );
+            })}
           </tr>
         ))}
       </tbody>
@@ -375,6 +498,13 @@ const ConsultaTablaFront: React.FC<ConsultaTablaFrontProps> = ({
       </div>
     ) : (
       <div className="edit-controls">
+           <button
+          onClick={handleOpenDeleteModal}
+          disabled={selectedRowId === null}
+          className="delete-button"
+        >
+          Eliminar Fila Seleccionada
+        </button>
         <button
           onClick={() => {
             if (selectedRowId !== null) {
@@ -388,6 +518,7 @@ const ConsultaTablaFront: React.FC<ConsultaTablaFrontProps> = ({
         >
           Editar Fila Seleccionada
         </button>
+
         <button
           onClick={handleOpenNewRecordModal}
           className="edit-button"
@@ -546,8 +677,8 @@ const ConsultaTablaFront: React.FC<ConsultaTablaFrontProps> = ({
   .data-table {
     width: 100%;
     min-width: fit-content;
-    border-collapse: separate;
-    border-spacing: 0;
+    border-collapse: collapse;
+    border: 1px solid var(--color-border);
   }
 
   .data-table thead {
@@ -563,13 +694,8 @@ const ConsultaTablaFront: React.FC<ConsultaTablaFrontProps> = ({
     font-size: 0.875rem;
     font-weight: 600;
     color: var(--color-text);
-    border-right: 1px solid var(--color-border);
+    border: 1px solid var(--color-border);
     min-width: 120px;
-  }
-
-  .data-column:last-child,
-  .data-cell:last-child {
-    border-right: none;
   }
 
   .column-title {
@@ -580,9 +706,12 @@ const ConsultaTablaFront: React.FC<ConsultaTablaFrontProps> = ({
   }
 
   .table-row {
-    border-bottom: 1px solid var(--color-border);
     cursor: pointer;
     transition: background-color 0.15s ease;
+  }
+
+  .table-row:nth-child(even) {
+    background-color: rgba(255, 255, 255, 0.03);
   }
 
   .table-row:hover {
@@ -598,7 +727,7 @@ const ConsultaTablaFront: React.FC<ConsultaTablaFrontProps> = ({
     text-align: center;
     font-size: 0.875rem;
     color: var(--color-text);
-    border-right: 1px solid var(--color-border);
+    border: 1px solid var(--color-border);
   }
 
   .cell-content {
@@ -641,7 +770,8 @@ const ConsultaTablaFront: React.FC<ConsultaTablaFrontProps> = ({
     gap: var(--spacing-sm);
   }
 
-  .edit-button {
+  .edit-button,
+  .delete-button {
     padding: var(--spacing-sm) var(--spacing-md);
     background-color: var(--color-selected);
     color: white;
@@ -658,18 +788,43 @@ const ConsultaTablaFront: React.FC<ConsultaTablaFrontProps> = ({
     white-space: nowrap;
   }
 
-  .edit-button:hover:not(:disabled) {
+  .edit-button:hover:not(:disabled),
+  .delete-button:hover:not(:disabled) {
     background-color: #1d4ed8;
     transform: translateY(-1px);
   }
 
-  .edit-button:disabled {
+  .delete-button {
+    padding: var(--spacing-sm) var(--spacing-md);
+    background-color: var(--color-danger);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-xs);
+    white-space: nowrap;
+  }
+
+  .delete-button:hover:not(:disabled) {
+    background-color: #b91c1c;
+    transform: translateY(-1px);
+  }
+
+  .edit-button:disabled,
+  .delete-button:disabled {
     opacity: 0.5;
     cursor: not-allowed;
     transform: none;
   }
 
-  .edit-button:active:not(:disabled) {
+  .edit-button:active:not(:disabled),
+  .delete-button:active:not(:disabled) {
     transform: translateY(0);
   }
 
@@ -680,7 +835,8 @@ const ConsultaTablaFront: React.FC<ConsultaTablaFrontProps> = ({
   }
 
   .btn-save,
-  .btn-cancel {
+  .btn-cancel,
+  .btn-danger {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -705,6 +861,15 @@ const ConsultaTablaFront: React.FC<ConsultaTablaFrontProps> = ({
     transform: translateY(-1px);
   }
 
+  .btn-danger {
+    background-color: var(--color-danger);
+  }
+
+  .btn-danger:hover {
+    background-color: #b91c1c;
+    transform: translateY(-1px);
+  }
+
   .btn-cancel {
     background-color: var(--color-danger);
   }
@@ -715,55 +880,174 @@ const ConsultaTablaFront: React.FC<ConsultaTablaFrontProps> = ({
   }
 
   .btn-save:active,
+  .btn-danger:active,
   .btn-cancel:active {
     transform: translateY(0);
   }
 
-  @media (min-width: 480px) {
+  /* Mobile: max-width 479px */
+  @media (max-width: 479px) {
+    .table-container {
+      border-radius: 8px;
+      max-height: clamp(300px, 50vh, 600px);
+    }
+
+    .table-header {
+      padding: var(--spacing-sm);
+    }
+
+    .table-title {
+      font-size: 1rem;
+    }
+
+    .data-column {
+      padding: var(--spacing-xs);
+      font-size: 0.75rem;
+      min-width: 100px;
+    }
+
     .column-title {
-      max-width: 250px;
+      max-width: 120px;
+    }
+
+    .data-cell {
+      padding: var(--spacing-xs);
+      font-size: 0.75rem;
     }
 
     .cell-content {
-      max-width: 220px;
+      max-width: 120px;
+    }
+
+    .edit-input {
+      padding: 6px 8px;
+      font-size: 0.75rem;
+    }
+
+    .table-footer {
+      padding: var(--spacing-sm);
+      flex-direction: column;
+      align-items: stretch;
+      gap: var(--spacing-sm);
+    }
+
+    .edit-controls {
+      flex-direction: column;
+      width: 100%;
+      gap: var(--spacing-sm);
+    }
+
+    .edit-button,
+    .delete-button,
+    .btn-save,
+    .btn-cancel {
+      width: 100%;
+      justify-content: center;
+      padding: var(--spacing-sm);
+      font-size: 0.875rem;
+    }
+
+    .modal-content {
+      width: 95%;
+      max-width: none;
+      border-radius: 8px;
+    }
+
+    .modal-title {
+      font-size: 1rem;
+      padding: var(--spacing-md);
+    }
+
+    .modal-body {
+      padding: var(--spacing-md);
+    }
+
+    .modal-footer {
+      padding: var(--spacing-md);
+      flex-direction: column;
+      gap: var(--spacing-sm);
+    }
+
+    .form-input {
+      font-size: 0.875rem;
     }
   }
 
-  @media (min-width: 640px) {
+  /* Small tablet: 480px to 639px */
+  @media (min-width: 480px) and (max-width: 639px) {
+    .column-title {
+      max-width: 200px;
+    }
+
+    .cell-content {
+      max-width: 180px;
+    }
+
+    .table-footer {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .edit-controls {
+      flex-direction: column;
+      width: 100%;
+    }
+
+    .edit-button,
+    .delete-button,
+    .btn-save,
+    .btn-cancel {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .modal-content {
+      width: 90%;
+    }
+  }
+
+  /* Tablet: 640px to 767px */
+  @media (min-width: 640px) and (max-width: 767px) {
     .table-header {
       padding: var(--spacing-lg);
     }
 
     .table-title {
-      font-size: 1.25rem;
+      font-size: 1.125rem;
     }
 
     .data-column {
       padding: var(--spacing-md);
-      font-size: 1rem;
-      min-width: 140px;
+      font-size: 0.875rem;
+      min-width: 130px;
     }
 
     .data-cell {
       padding: var(--spacing-md);
-      font-size: 1rem;
+      font-size: 0.875rem;
     }
 
     .table-footer {
       padding: var(--spacing-lg);
     }
 
-    .edit-button {
+    .edit-button,
+    .delete-button {
       padding: var(--spacing-sm) var(--spacing-lg);
-      font-size: 1rem;
+      font-size: 0.875rem;
     }
 
     .btn-save,
     .btn-cancel {
-      font-size: 1rem;
+      font-size: 0.875rem;
+    }
+
+    .modal-content {
+      width: 85%;
     }
   }
 
+  /* Desktop: 768px+ */
   @media (min-width: 768px) {
     .table-header {
       padding: var(--spacing-xl);
@@ -773,8 +1057,14 @@ const ConsultaTablaFront: React.FC<ConsultaTablaFrontProps> = ({
       font-size: 1.5rem;
     }
 
-    .edit-button {
+    .edit-button,
+    .delete-button {
       padding: var(--spacing-md) var(--spacing-xl);
+    }
+
+    .modal-content {
+      width: 90%;
+      max-width: 600px;
     }
   }
 
@@ -894,7 +1184,6 @@ const ConsultaTablaFront: React.FC<ConsultaTablaFrontProps> = ({
 `}</style>
   </>
   );
-
 };
 
 export default ConsultaTablaFront;

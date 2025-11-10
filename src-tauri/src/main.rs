@@ -47,6 +47,8 @@ fn main() {
                 consulta_tabla,
                 open_directory,
                 editar::update_table_row,
+                editar::delete_table_row,
+                editar::crear_registro_con_auto_incremento,
                 execute_sql,
                 // NUEVO: Registra los nuevos comandos.
                 exportar_tabla::export_table_to_json,
