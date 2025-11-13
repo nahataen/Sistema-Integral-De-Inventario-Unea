@@ -145,7 +145,7 @@ pub struct ExecuteSqlParams {
 
 // Comando de Tauri para crear un nuevo registro con auto-incremento del campo "No."
 #[tauri::command]
-pub fn crear_registro_con_auto_incremento(
+pub fn crear_registro_con_auto_incremento_no(
     state: State<AppState>,
     db_name: String,
     table_name: String,
@@ -226,7 +226,7 @@ pub fn crear_registro_con_auto_incremento(
     let params_refs: Vec<&dyn ToSql> = params.iter().map(|v| v as &dyn ToSql).collect();
 
     // Ejecutar la inserción
-    let rows_affected = conn.execute(&sql, params_refs.as_slice())
+    let _rows_affected = conn.execute(&sql, params_refs.as_slice())
         .map_err(|e| format!("Error al ejecutar INSERT: {}", e))?;
 
     // Mostrar los datos del registro creado en el formato solicitado

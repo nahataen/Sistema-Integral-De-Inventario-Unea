@@ -35,7 +35,7 @@ pub fn consulta_tabla(state: State<AppState>, db_name: String, table_name: Strin
     let conn = rusqlite::Connection::open(&db_file).map_err(|e| format!("Error al abrir la base de datos: {}", e))?;
 
     // Obtener las columnas de la tabla
-    let mut stmt = conn.prepare(&format!("PRAGMA table_info({})", table_name))
+    let mut stmt = conn.prepare(&format!("PRAGMA table_info(\"{}\")", table_name))
         .map_err(|e| format!("Error al preparar la consulta de columnas: {}", e))?;
 
     let columns: Vec<String> = stmt.query_map([], |row| {
@@ -52,7 +52,7 @@ pub fn consulta_tabla(state: State<AppState>, db_name: String, table_name: Strin
     } else {
         ""
     };
-    let query = format!("SELECT * FROM {}{}", table_name, order_clause);
+    let query = format!("SELECT * FROM \"{}\"{}", table_name, order_clause);
     let mut stmt = conn.prepare(&query)
         .map_err(|e| format!("Error al preparar la consulta de datos: {}", e))?;
 

@@ -48,13 +48,13 @@ fn main() {
                 open_directory,
                 editar::update_table_row,
                 editar::delete_table_row,
-                editar::crear_registro_con_auto_incremento,
+                editar::crear_registro_con_auto_incremento_no,
+                crear_registro::crear_registro_con_auto_incremento,
                 execute_sql,
                 // NUEVO: Registra los nuevos comandos.
                 exportar_tabla::export_table_to_json,
                 importar_tabla::import_table_from_json,
                 importar_tabla::import_table_from_json_with_options,
-                crear_registro::crear_registro, // <--- NUEVO
             ]
         )
         .run(tauri::generate_context!())

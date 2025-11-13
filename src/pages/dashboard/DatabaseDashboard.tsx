@@ -1,9 +1,10 @@
 import { useState, useEffect, useMemo } from "react";
-import Sidebar from "../components/layout/Sidebar";
-import Header from "../components/layout/Header";
-import DatabaseTable from "../components/ui/DatabaseTable";
-import type { Database } from "./types";
+import Sidebar from "../../components/layout/Sidebar";
+import Header from "../../components/layout/Header";
+import DatabaseTable from "../../components/ui/DatabaseTable";
+import type { Database } from "../../types";
 import { invoke } from "@tauri-apps/api/tauri";
+import styles from "./DatabaseDashboard.module.css";
 
 const DatabaseDashboard = () => {
   const [searchValue, setSearchValue] = useState("");
@@ -14,7 +15,9 @@ const DatabaseDashboard = () => {
   // Cargar bases de datos en el montaje
   useEffect(() => {
     (window as any).refreshDatabases = loadDatabases;
-    return () => delete (window as any).refreshDatabases;
+    return () => {
+      delete (window as any).refreshDatabases;
+    };
   }, []);
 
   const formatFileSize = (bytes: any): string => {
@@ -34,8 +37,8 @@ const DatabaseDashboard = () => {
     return `${size.toFixed(1)} ${units[i]}`;
   };
 
-  const getSizeColor = (bytes: number): string => {
-    if (isNaN(bytes)) return "text-slate-400";
+  const getSizeColor = (bytes: any): string => {
+    if (typeof bytes !== "number" || isNaN(bytes)) return "text-slate-400";
     if (bytes < 1024 * 1024) return "text-blue-400";
     if (bytes < 100 * 1024 * 1024) return "text-yellow-400";
     return "text-red-400";
@@ -74,68 +77,62 @@ const DatabaseDashboard = () => {
   }, [filteredDatabases]);
 
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-slate-100">
+    <div className={styles.container}>
       {/* Fondo oscuro al abrir menú en móvil */}
       {isMobileMenuOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+          className={styles.overlay}
           onClick={() => setIsMobileMenuOpen(false)}
         />
       )}
 
       {/* Sidebar */}
       <aside
-        className={`fixed lg:relative inset-y-0 left-0 z-40 w-72 transform transition-transform duration-300 ${
-          isMobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
-        }`}
+        className={`${styles.sidebar} ${isMobileMenuOpen ? styles.sidebarOpen : ""} ${styles.sidebarRelative}`}
       >
         <Sidebar />
       </aside>
 
       {/* Contenido principal */}
-      <div className="flex flex-col flex-1 min-w-0">
+      <div className={styles.main}>
         {/* Encabezado */}
-        <header className="sticky top-0 z-20 border-b border-slate-700/30 bg-slate-900/80 backdrop-blur-xl">
-          <Header
-            searchValue={searchValue}
-            setSearchValue={setSearchValue}
-            onMenuClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            showMobileMenu
-            aria-label="Menú principal"
-          />
+        <header className={styles.header}>
+          <div className={styles.headerContent}>
+            <Header
+              searchValue={searchValue}
+              setSearchValue={setSearchValue}
+              onMenuClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              showMobileMenu
+              aria-label="Menú principal"
+            />
+          </div>
         </header>
 
         {/* Contenido */}
-        <main className="flex-1 overflow-y-auto p-3 sm:p-5 lg:p-8 hub-main-scroll">
-          <div className="max-w-7xl mx-auto space-y-6">
+        <main className={`${styles.content} ${styles.scrollContainer}`}>
+          <div className={styles.contentGrid}>
             {/* Contenedor principal */}
-            <div className="rounded-2xl bg-slate-800/50 backdrop-blur-md border border-slate-700/40 shadow-xl hover:shadow-cyan-500/20 transition-all duration-300">
+            <div className={styles.card}>
               {loading ? (
                 // Skeleton Loader
-                <div className="animate-pulse grid gap-3 p-6">
+                <div className={styles.loading}>
                   {[...Array(5)].map((_, i) => (
-                    <div
-                      key={i}
-                      className="h-6 bg-slate-700/40 rounded-lg"
-                    ></div>
+                    <div key={i}></div>
                   ))}
-                  <div className="h-6 bg-slate-700/40 rounded-lg w-3/4"></div>
+                  <div></div>
                 </div>
               ) : databasesWithFormattedSize.length > 0 ? (
-                <div className="p-4">
-                  <div className="overflow-auto max-h-[75vh]">
-                    <DatabaseTable
-                      databases={databasesWithFormattedSize}
-                      onRefresh={loadDatabases}
-                    />
-                  </div>
+                <div className={styles.tableWrapper}>
+                  <DatabaseTable
+                    databases={databasesWithFormattedSize}
+                    onRefresh={loadDatabases}
+                  />
                 </div>
               ) : (
                 // Estado vacío
-                <div className="flex flex-col items-center justify-center py-16 text-center space-y-3">
-                  <div className="bg-slate-700/30 rounded-full p-4">
+                <div className={styles.emptyState}>
+                  <div className={styles.emptyIcon}>
                     <svg
-                      className="w-10 h-10 text-slate-400"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -148,10 +145,10 @@ const DatabaseDashboard = () => {
                       />
                     </svg>
                   </div>
-                  <h3 className="text-lg font-semibold text-slate-200">
+                  <h3 className={styles.emptyTitle}>
                     No se encontraron bases de datos
                   </h3>
-                  <p className="text-slate-400 text-sm">
+                  <p className={styles.emptyText}>
                     Intenta ajustar tu búsqueda o crea una nueva base de datos
                   </p>
                 </div>
@@ -159,14 +156,13 @@ const DatabaseDashboard = () => {
             </div>
 
             {/* Footer informativo */}
-            <footer className="flex flex-col sm:flex-row items-center justify-between text-slate-400 text-sm mt-4 border-t border-slate-700/40 pt-3">
+            <footer className={styles.footer}>
               <p>
                 {databasesWithFormattedSize.length}{" "}
                 {databasesWithFormattedSize.length === 1
                   ? "base de datos encontrada"
                   : "bases de datos encontradas"}
               </p>
-
             </footer>
           </div>
         </main>

@@ -110,7 +110,7 @@ pub fn delete_table(
     let conn = rusqlite::Connection::open(&db_file)
         .map_err(|e| format!("Error al abrir la base de datos: {}", e))?;
 
-    conn.execute(&format!("DROP TABLE IF EXISTS {}", table_name), [])
+    conn.execute(&format!("DROP TABLE IF EXISTS \"{}\"", table_name), [])
         .map_err(|e| format!("Error al eliminar la tabla: {}", e))?;
 
     // Eliminar imagen asociada si existe

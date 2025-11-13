@@ -1,4 +1,4 @@
-use rusqlite::Connection;
+use rusqlite::{Connection, ToSql};
 use serde::Deserialize;
 use tauri::State;
 use crate::database_manager::AppState;
@@ -7,12 +7,19 @@ use crate::database_manager::AppState;
 pub struct NuevoRegistro {
     pub db_name: String,
     pub table_name: String,
-    pub data: serde_json::Value, // datos como objeto JSON { columna: valor }
+    pub id_column: String,
+    pub data: serde_json::Value,
 }
 
 #[tauri::command]
-pub fn crear_registro(state: State<AppState>, registro: NuevoRegistro) -> Result<String, String> {
-    // Ruta del archivo de base de datos
+pub fn crear_registro_con_auto_incremento(
+    state: State<AppState>,
+    registro: NuevoRegistro,
+) -> Result<String, String> {
+
+    // ==============================
+    // 1. Abrir base de datos
+    // ==============================
     let db_path = state.db_dir.join(format!("{}.db", registro.db_name));
     let sqlite_path = state.db_dir.join(format!("{}.sqlite", registro.db_name));
 
@@ -21,72 +28,120 @@ pub fn crear_registro(state: State<AppState>, registro: NuevoRegistro) -> Result
     } else if sqlite_path.exists() {
         sqlite_path
     } else {
-        return Err(format!("No se encontró la base de datos: {}", registro.db_name));
+        return Err(format!("No se encontró BD: {}", registro.db_name));
     };
 
-    // Conectar
     let conn = Connection::open(&db_file)
-        .map_err(|e| format!("Error al abrir la base de datos: {}", e))?;
+        .map_err(|e| format!("Error al abrir la BD: {}", e))?;
 
-    // Extraer claves y valores del JSON, permitiendo campos faltantes
+    // ==============================
+    // 2. Validar data
+    // ==============================
     let obj = registro.data.as_object()
-        .ok_or("El campo 'data' debe ser un objeto JSON")?;
+        .ok_or("data debe ser un objeto JSON")?;
 
-    // Obtener todas las columnas de la tabla para asegurar que todos los campos estén incluidos
-    let mut stmt = conn.prepare(&format!("PRAGMA table_info({})", registro.table_name))
-        .map_err(|e| format!("Error al preparar la consulta de columnas: {}", e))?;
+    // ==============================
+    // 3. Auto-incrementar ID
+    // ==============================
+    let last_id_query = format!("SELECT \"{}\" FROM \"{}\" WHERE \"{}\" IS NOT NULL AND \"{}\" != '' ORDER BY CAST(\"{}\" AS INTEGER) DESC LIMIT 1", registro.id_column, registro.table_name, registro.id_column, registro.id_column, registro.id_column);
+    let mut stmt = conn.prepare(&last_id_query)
+        .map_err(|e| format!("Error al preparar consulta para obtener último ID: {}", e))?;
 
-    let all_columns: Vec<String> = stmt.query_map([], |row| {
+    let last_id: Option<i64> = stmt.query_row([], |row| row.get(0))
+        .ok(); // Si no hay filas, devuelve None
+
+    let next_id = last_id.map(|n| n + 1).unwrap_or(1);
+
+    // Verificar que el ID no exista ya (por si acaso)
+    let check_query = format!("SELECT COUNT(*) FROM \"{}\" WHERE \"{}\" = ?", registro.table_name, registro.id_column);
+    let mut check_stmt = conn.prepare(&check_query)
+        .map_err(|e| format!("Error al preparar consulta de verificación: {}", e))?;
+
+    let count: i64 = check_stmt.query_row([next_id], |row| row.get(0))
+        .unwrap_or(0);
+
+    let final_id = if count > 0 {
+        // Si ya existe, buscar el siguiente ID disponible
+        let find_next_query = format!("SELECT \"{}\" + 1 FROM \"{}\" WHERE \"{}\" + 1 NOT IN (SELECT \"{}\" FROM \"{}\") AND \"{}\" IS NOT NULL ORDER BY \"{}\" LIMIT 1", registro.id_column, registro.table_name, registro.id_column, registro.id_column, registro.table_name, registro.id_column, registro.id_column);
+        let mut find_stmt = conn.prepare(&find_next_query)
+            .map_err(|e| format!("Error al preparar consulta para encontrar siguiente ID: {}", e))?;
+
+        find_stmt.query_row([], |row| row.get(0))
+            .unwrap_or(next_id + 1)
+    } else {
+        next_id
+    };
+
+    // Crear los datos con el nuevo ID
+    let mut data_with_id = obj.clone();
+    data_with_id.insert(registro.id_column.clone(), serde_json::Value::Number(serde_json::Number::from(final_id)));
+
+    // ==============================
+    // 4. Obtener columnas reales
+    // ==============================
+    let mut stmt = conn.prepare(&format!("PRAGMA table_info(\"{}\")", registro.table_name))
+        .map_err(|e| format!("Error PRAGMA: {}", e))?;
+
+    let columns: Vec<String> = stmt.query_map([], |row| {
         let name: String = row.get(1)?;
         Ok(name)
-    }).map_err(|e| format!("Error al ejecutar la consulta de columnas: {}", e))?
-      .collect::<Result<Vec<String>, _>>()
-      .map_err(|e| format!("Error al obtener columnas: {}", e))?;
+    })
+    .map_err(|e| format!("Error recorriendo columnas: {}", e))?
+    .collect::<Result<Vec<_>, _>>()
+    .map_err(|e| format!("Error columnas: {}", e))?;
 
-    // Usar todas las columnas de la tabla, no solo las proporcionadas
-    let columns: Vec<String> = all_columns;
+    // ==============================
+    // 5. Crear SQL dinámico
+    // ==============================
+    let quoted_columns = columns.iter()
+        .map(|c| format!("\"{}\"", c))
+        .collect::<Vec<_>>()
+        .join(", ");
 
-    // Construir sentencia SQL dinámica con columnas entre comillas para manejar espacios
-    let placeholders = vec!["?"; columns.len()].join(", ");
-    let quoted_columns = columns.iter().map(|c| format!("\"{}\"", c)).collect::<Vec<_>>();
+    let placeholders = columns.iter()
+        .map(|_| "?")
+        .collect::<Vec<_>>()
+        .join(", ");
+
     let sql = format!(
         "INSERT INTO \"{}\" ({}) VALUES ({})",
         registro.table_name,
-        quoted_columns.join(", "),
+        quoted_columns,
         placeholders
     );
 
-    // Convertir valores JSON a tipos ToSql, manejando campos faltantes como NULL
-    let mut values: Vec<Box<dyn rusqlite::ToSql>> = Vec::new();
-    for column in &columns {
-        let value = obj.get(column);
-        match value {
-            Some(serde_json::Value::String(s)) => values.push(Box::new(s.clone())),
-            Some(serde_json::Value::Number(n)) => {
-                if let Some(i) = n.as_i64() {
-                    values.push(Box::new(i));
-                } else if let Some(f) = n.as_f64() {
-                    values.push(Box::new(f));
-                } else {
-                    values.push(Box::new(rusqlite::types::Null));
+    // ==============================
+    // 6. Mapear valores
+    // ==============================
+    let mut params: Vec<Box<dyn ToSql>> = Vec::new();
+
+    for col in columns.iter() {
+        if let Some(v) = data_with_id.get(col) {
+            match v {
+                serde_json::Value::String(s) => params.push(Box::new(s.clone())),
+                serde_json::Value::Number(n) => {
+                    if let Some(i) = n.as_i64() { params.push(Box::new(i)); }
+                    else if let Some(f) = n.as_f64() { params.push(Box::new(f)); }
+                    else { params.push(Box::new(rusqlite::types::Null)); }
                 }
+                serde_json::Value::Bool(b) => params.push(Box::new(*b as i32)),
+                serde_json::Value::Null => params.push(Box::new(rusqlite::types::Null)),
+                _ => params.push(Box::new(v.to_string())),
             }
-            Some(serde_json::Value::Bool(b)) => values.push(Box::new(*b as i32)),
-            Some(serde_json::Value::Null) => values.push(Box::new(rusqlite::types::Null)),
-            None => values.push(Box::new(rusqlite::types::Null)), // Campo faltante = NULL
-            _ => values.push(Box::new(value.unwrap().to_string())),
+        } else {
+            params.push(Box::new(rusqlite::types::Null));
         }
     }
 
-    // Ejecutar inserción
-    let mut stmt = conn
-        .prepare(&sql)
-        .map_err(|e| format!("Error preparando sentencia: {}", e))?;
+    let params_ref = params.iter()
+        .map(|p| &**p as &dyn ToSql)
+        .collect::<Vec<_>>();
 
-    let params: Vec<&dyn rusqlite::ToSql> = values.iter().map(|v| &**v).collect();
+    // ==============================
+    // 7. Ejecutar inserción
+    // ==============================
+    conn.execute(&sql, params_ref.as_slice())
+        .map_err(|e| format!("Error INSERT: {}", e))?;
 
-    stmt.execute(params.as_slice())
-        .map_err(|e| format!("Error al ejecutar la inserción: {}", e))?;
-
-    Ok("Registro creado exitosamente".to_string())
+    Ok("Registro creado exitosamente".into())
 }

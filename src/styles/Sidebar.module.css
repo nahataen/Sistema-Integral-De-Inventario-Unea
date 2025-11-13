@@ -1,0 +1,241 @@
+/* ============================
+   🌌 Sidebar.module.css — Black Glassmorphism Mejorado
+   ============================ */
+
+.sidebar {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .sidebar {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    /* 🔥 NUEVO ANCHO AJUSTADO */
+    width: 300px;                 /* Antes 240px */
+    min-width: 300px;
+
+    min-height: 100vh;
+    background: rgba(8, 10, 20, 0.55);
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+
+    color: #f1f5f9;
+
+    padding: 2rem 1.5rem;
+
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+
+    box-shadow: 10px 0 35px rgba(0, 0, 0, 0.55);
+
+    transition: all 0.35s ease;
+  }
+
+  .sidebar:hover {
+    box-shadow: 14px 0 45px rgba(0, 0, 0, 0.7);
+  }
+}
+
+/* ============================
+   🏛 Logo
+   ============================ */
+.logoContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 12px 0;
+  margin-bottom: 38px;
+}
+
+.logo {
+  width: 105px;  /* +10px más grande */
+  height: auto;
+  filter: brightness(0) invert(1);
+  opacity: 0.9;
+  transition: transform 0.35s ease, opacity 0.35s ease;
+}
+
+.logo:hover {
+  transform: scale(1.12);
+  opacity: 1;
+}
+
+/* ============================
+   🧭 Navegación
+   ============================ */
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 14px;
+  flex-grow: 1;
+}
+
+.navButton {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  padding: 12px 16px;
+
+  /* Glass mejorado */
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  background: rgba(20, 22, 32, 0.35);
+
+  color: #cbd5e1;
+
+  font-size: 1rem;
+  font-weight: 500;
+
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+
+  transition: all 0.25s ease;
+  backdrop-filter: blur(12px);
+}
+
+.navButton:hover {
+  background: rgba(40, 42, 55, 0.55);
+  color: #ffffff;
+  transform: translateX(4px) translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+}
+
+/* Botón activo */
+.active {
+  background: rgba(37, 99, 235, 0.28);
+  color: #ffffff;
+  font-weight: 600;
+  border: 1px solid rgba(37, 99, 235, 0.5);
+  box-shadow: inset 0 0 18px rgba(37, 99, 235, 0.45);
+}
+
+.active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 20%;
+  height: 60%;
+  width: 4px;
+  border-radius: 2px;
+  background: #60a5fa;
+}
+
+/* ============================
+   🧩 Iconos SVG
+   ============================ */
+.icon {
+  width: 22px;
+  height: 22px;
+  opacity: 0.9;
+  transition: transform 0.25s ease, filter 0.25s ease;
+}
+
+.navButton:hover .icon {
+  transform: scale(1.15);
+  filter: drop-shadow(0 0 6px rgba(59, 130, 246, 0.8));
+}
+
+/* ============================
+   💾 Estado BD
+   ============================ */
+.currentDbBox {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  background: rgba(12, 14, 22, 0.5);
+  border: 1px solid rgba(96, 165, 250, 0.25);
+  border-radius: 12px;
+
+  padding: 14px;
+
+  margin-top: 2.5rem;
+
+  box-shadow: inset 0 0 12px rgba(96, 165, 250, 0.12);
+
+  backdrop-filter: blur(14px);
+  transition: all 0.3s ease;
+}
+
+.currentDbBox:hover {
+  background: rgba(18, 20, 28, 0.7);
+  box-shadow: 0 0 18px rgba(96, 165, 250, 0.35);
+}
+
+/* Indicador verde */
+.dbIndicator {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #22c55e 40%, #166534 90%);
+  box-shadow: 0 0 12px 5px rgba(16, 185, 129, 0.75),
+              0 0 20px 8px rgba(52, 211, 153, 0.4);
+  animation: pulseGlow 1.8s infinite ease-in-out;
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.25);
+  }
+}
+
+/* Texto BD */
+.dbTextBox {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.dbName {
+  font-size: 0.9rem;
+  color: #e0f2fe;
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 180px;
+  position: relative;
+}
+
+/* ============================
+   📱 Responsividad
+   ============================ */
+@media (max-width: 1024px) {
+  .sidebar {
+    width: 260px;
+    min-width: 260px;
+  }
+
+  .logo {
+    width: 85px;
+  }
+
+  .dbName {
+    max-width: 160px;
+  }
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    display: flex;
+    width: 100%;
+    min-width: unset;
+    background: rgba(20,20,30,0.45);
+    border-radius: 14px;
+    margin: 1rem auto;
+  }
+
+  .navButton {
+    background: rgba(255,255,255,0.03);
+  }
+
+  .currentDbBox {
+    background: rgba(255,255,255,0.03);
+  }
+}

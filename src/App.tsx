@@ -3,12 +3,12 @@ import { Routes, Route } from "react-router-dom";
 
 // Importamos los componentes de página de forma perezosa (lazy loading)
 // Esto significa que su código solo se cargará cuando sean necesarios
-const DatabaseDashboard = lazy(() => import("./pages/DatabaseDashboard"));
-const Configuracion = lazy(() => import("./pages/Configuracion"));
-const Pagina = lazy(() => import("./pages/pagina"));
-const AboutPage = lazy(() => import("./pages/about"));
-const EditarFila = lazy(() => import("./pages/editar_fila"));
-const InventarioDashboard = lazy(() => import("./pages/hub_tablas")); // Hub de tablas
+const DatabaseDashboard = lazy(() => import("./pages/dashboard/DatabaseDashboard"));
+const Configuracion = lazy(() => import("./pages/settings/Configuracion"));
+const Pagina = lazy(() => import("./pages/database/pagina"));
+const AboutPage = lazy(() => import("./pages/home/about"));
+const EditarFila = lazy(() => import("./pages/database/editar_fila"));
+const InventarioDashboard = lazy(() => import("./pages/database/hub_tablas")); // Hub de tablas
 
 function App() {
   return (

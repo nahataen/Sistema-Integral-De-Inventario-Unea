@@ -1,8 +1,9 @@
 use rusqlite::{Connection, ToSql};
 use tauri::State;
+use regex::Regex;
 
 use crate::database_manager::AppState;
-use crate::io_utils::{TableExport, json_to_rusqlite}; // Usa el módulo compartido
+use crate::io_utils::{TableExport, json_to_rusqlite};
 
 // Importa una tabla desde un string JSON.
 #[tauri::command]
@@ -58,38 +59,49 @@ fn import_table_from_json_internal(
     let table_exists = {
         let mut stmt = conn.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name=?")
             .map_err(|e| e.to_string())?;
-        let exists = stmt.exists([final_table_name.as_str()]).map_err(|e| e.to_string())?;
-        exists
+        stmt.exists([final_table_name.as_str()]).map_err(|e| e.to_string())?
     };
 
     if table_exists && !force_replace {
-        return Err(format!("La tabla '{}' ya existe. ¿Desea reemplazarla o cambiar el nombre?", final_table_name));
+        return Err(format!(
+            "La tabla '{}' ya existe. ¿Desea reemplazarla o cambiar el nombre?",
+            final_table_name
+        ));
     }
 
-    // Actualiza el nombre de la tabla en los datos de importación si se cambió
+    // 🔧 Corrección: actualiza el nombre de tabla dentro del CREATE TABLE con Regex
     let original_table_name = import_data.table_name.clone();
     if final_table_name != original_table_name {
         import_data.table_name = final_table_name.clone();
-        // También actualizar el CREATE TABLE statement para usar el nuevo nombre
-        import_data.create_statement = import_data.create_statement.replace(
-            &format!("\"{}\"", original_table_name),
-            &format!("\"{}\"", final_table_name)
-        );
+
+        let pattern = Regex::new(&format!(
+            r#"(?i)CREATE\s+TABLE\s+(IF\s+NOT\s+EXISTS\s+)?(["`]?{}["`]?)"#,
+            regex::escape(&original_table_name)
+        ))
+        .map_err(|e| format!("Error al compilar regex: {}", e))?;
+
+        import_data.create_statement = pattern
+            .replace(
+                &import_data.create_statement,
+                format!("CREATE TABLE $1\"{}\"", final_table_name),
+            )
+            .to_string();
     }
 
-    // Usa una transacción para asegurar la integridad de los datos.
+    // Usa una transacción para asegurar la integridad de los datos
     let tx = conn.transaction().map_err(|e| e.to_string())?;
 
-    // Elimina la tabla si ya existe (solo si force_replace es true, pero ya verificamos arriba)
+    // Elimina la tabla si ya existe y se fuerza reemplazo
     if force_replace {
         tx.execute(&format!("DROP TABLE IF EXISTS \"{}\"", import_data.table_name), [])
             .map_err(|e| e.to_string())?;
     }
 
-    // Crea la nueva tabla.
+    // Crea la nueva tabla
     tx.execute(&import_data.create_statement, [])
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| format!("Error al crear tabla: {}", e))?;
 
+    // Inserta los datos si existen
     if !import_data.data.is_empty() {
         let first_row = &import_data.data[0];
         let columns: Vec<String> = first_row.keys().cloned().collect();
@@ -101,19 +113,20 @@ fn import_table_from_json_internal(
             import_data.table_name, column_list, value_placeholders
         );
 
-        // Inserta cada fila de datos.
         for row_map in &import_data.data {
-            let params: Result<Vec<_>, _> = columns.iter()
+            let params: Result<Vec<_>, _> = columns
+                .iter()
                 .map(|col| json_to_rusqlite(row_map.get(col).unwrap()))
                 .collect();
             let params = params?;
             let params_refs: Vec<&dyn ToSql> = params.iter().map(|v| v as &dyn ToSql).collect();
-            tx.execute(&insert_sql, &params_refs[..]).map_err(|e| e.to_string())?;
+            tx.execute(&insert_sql, &params_refs[..])
+                .map_err(|e| format!("Error insertando fila: {}", e))?;
         }
     }
 
-    // Confirma la transacción.
-    tx.commit().map_err(|e| e.to_string())?;
+    // Confirma la transacción
+    tx.commit().map_err(|e| format!("Error al confirmar transacción: {}", e))?;
 
     Ok(true)
 }

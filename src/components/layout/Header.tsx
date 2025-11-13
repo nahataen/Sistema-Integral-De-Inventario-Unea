@@ -1,5 +1,6 @@
 import { invoke } from "@tauri-apps/api/tauri";
 import { open } from "@tauri-apps/api/dialog";
+import styles from "./Header.module.css";
 
 interface HeaderProps {
   searchValue: string;
@@ -44,13 +45,13 @@ const Header = ({ searchValue, setSearchValue, onMenuClick, showMobileMenu = fal
   };
 
   return (
-    <header className="flex items-center justify-between px-3 sm:px-4 md:px-6 lg:px-10 py-2 sm:py-3 sticky top-0 z-10 bg-slate-900/95 backdrop-blur-md">
-      <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 flex-1 min-w-0">
+    <header className={styles.header}>
+      <div className={styles.headerLeft}>
         {/* Mobile menu button */}
         {showMobileMenu && (
           <button
             onClick={onMenuClick}
-            className="p-2 text-slate-300 hover:text-white hover:bg-slate-700/50 rounded-lg transition-colors lg:hidden"
+            className={styles.menuButton}
             aria-label="Toggle menu"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -59,12 +60,12 @@ const Header = ({ searchValue, setSearchValue, onMenuClick, showMobileMenu = fal
           </button>
         )}
 
-        <label className="relative flex-1 max-w-xs sm:max-w-md">
-          <span className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm sm:text-base">
+        <label className={styles.searchContainer}>
+          <span className={styles.searchIcon}>
             🔍
           </span>
           <input
-            className="w-full border border-slate-600/50 py-1.5 sm:py-2 pl-8 sm:pl-10 pr-3 sm:pr-4 text-xs sm:text-sm rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent bg-slate-800/50 text-white placeholder-slate-400 backdrop-blur-sm"
+            className={styles.searchInput}
             placeholder="Buscar"
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
@@ -72,10 +73,10 @@ const Header = ({ searchValue, setSearchValue, onMenuClick, showMobileMenu = fal
         </label>
       </div>
 
-      <div className="flex items-center gap-1 sm:gap-2">
+      <div className={styles.headerRight}>
         <button
           onClick={handleImport}
-          className="px-3 sm:px-4 py-1.5 sm:py-2 bg-blue-600 text-white text-xs sm:text-sm font-bold rounded-lg hover:bg-blue-700 transition-colors"
+          className={styles.importButton}
         >
           Importar
         </button>
