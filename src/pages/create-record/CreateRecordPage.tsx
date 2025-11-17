@@ -217,15 +217,15 @@ const CreateRecordPage: React.FC = () => {
 
       <style jsx>{`
         .create-record-container {
-          min-height: 100vh;
-          max-height: 100vh;
-          background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-          padding: clamp(1rem, 3vw, 2rem);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          overflow: hidden;
-        }
+           min-height: 100vh;
+           max-height: 100vh;
+           background: rgba(10, 10, 15, 0.8);
+           padding: clamp(1rem, 3vw, 2rem);
+           display: flex;
+           align-items: center;
+           justify-content: center;
+           overflow: hidden;
+         }
 
         .create-record-wrapper {
           width: 100%;
@@ -236,17 +236,17 @@ const CreateRecordPage: React.FC = () => {
         }
 
         .create-record-card {
-          background: rgba(30, 30, 46, 0.7);
-          backdrop-filter: blur(20px);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          border-radius: 20px;
-          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-          overflow: hidden;
-          animation: slideUp 0.4s ease-out;
-          display: flex;
-          flex-direction: column;
-          max-height: 100%;
-        }
+           background: rgba(15, 15, 25, 0.6);
+           backdrop-filter: blur(15px);
+           border: 1px solid rgba(255, 255, 255, 0.1);
+           border-radius: 0.75rem;
+           box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+           overflow: hidden;
+           animation: slideUp 0.4s ease-out;
+           display: flex;
+           flex-direction: column;
+           max-height: 100%;
+         }
 
         @keyframes slideUp {
           from {
@@ -260,12 +260,12 @@ const CreateRecordPage: React.FC = () => {
         }
 
         .create-record-header {
-          background: rgba(15, 52, 96, 0.6);
-          backdrop-filter: blur(10px);
-          padding: clamp(1.5rem, 3vw, 2rem);
-          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-          flex-shrink: 0;
-        }
+           background: rgba(20, 20, 30, 0.7);
+           backdrop-filter: blur(12px);
+           padding: clamp(1.5rem, 3vw, 2rem);
+           border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+           flex-shrink: 0;
+         }
 
         .header-content {
           display: flex;
@@ -274,25 +274,25 @@ const CreateRecordPage: React.FC = () => {
         }
 
         .icon-wrapper {
-          width: 48px;
-          height: 48px;
-          background: rgba(139, 92, 246, 0.2);
-          border: 1px solid rgba(139, 92, 246, 0.3);
-          border-radius: 12px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          backdrop-filter: blur(10px);
-          color: #a78bfa;
-        }
+           width: 48px;
+           height: 48px;
+           background: rgba(37, 99, 235, 0.2);
+           border: 1px solid rgba(37, 99, 235, 0.3);
+           border-radius: 12px;
+           display: flex;
+           align-items: center;
+           justify-content: center;
+           backdrop-filter: blur(10px);
+           color: #2563eb;
+         }
 
         .header-title {
-          font-size: clamp(1.25rem, 3vw, 1.75rem);
-          font-weight: 700;
-          margin: 0;
-          line-height: 1.2;
-          color: #ffffff;
-        }
+           font-size: clamp(1.25rem, 3vw, 1.75rem);
+           font-weight: 700;
+           margin: 0;
+           line-height: 1.2;
+           color: #e2e8f0;
+         }
 
         .header-subtitle {
           font-size: clamp(0.875rem, 2vw, 1rem);
@@ -316,13 +316,13 @@ const CreateRecordPage: React.FC = () => {
         }
 
         .create-record-body::-webkit-scrollbar-thumb {
-          background: rgba(139, 92, 246, 0.3);
-          border-radius: 4px;
-        }
+           background: rgba(255, 255, 255, 0.2);
+           border-radius: 4px;
+         }
 
-        .create-record-body::-webkit-scrollbar-thumb:hover {
-          background: rgba(139, 92, 246, 0.5);
-        }
+         .create-record-body::-webkit-scrollbar-thumb:hover {
+           background: rgba(255, 255, 255, 0.4);
+         }
 
         .fields-grid {
           display: grid;
@@ -337,13 +337,13 @@ const CreateRecordPage: React.FC = () => {
         }
 
         .field-label {
-          font-size: clamp(0.875rem, 1.5vw, 0.95rem);
-          font-weight: 600;
-          color: rgba(255, 255, 255, 0.9);
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-        }
+           font-size: clamp(0.875rem, 1.5vw, 0.95rem);
+           font-weight: 600;
+           color: #e2e8f0;
+           display: flex;
+           align-items: center;
+           gap: 0.5rem;
+         }
 
         .locked-badge {
           display: inline-flex;
@@ -357,45 +357,46 @@ const CreateRecordPage: React.FC = () => {
         }
 
         .field-input {
-          width: 100%;
-          padding: clamp(0.625rem, 2vw, 0.875rem);
-          font-size: clamp(0.875rem, 1.5vw, 1rem);
-          background: rgba(255, 255, 255, 0.05);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          border-radius: 8px;
-          color: #ffffff;
-          transition: all 0.2s ease;
-          font-family: inherit;
-        }
+           width: 100%;
+           padding: clamp(0.625rem, 2vw, 0.875rem);
+           font-size: clamp(0.875rem, 1.5vw, 1rem);
+           background: rgba(25, 25, 35, 0.7);
+           border: 1px solid rgba(255, 255, 255, 0.1);
+           border-radius: 0.25rem;
+           color: #e2e8f0;
+           transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+           font-family: inherit;
+           backdrop-filter: blur(10px);
+         }
 
-        .field-input:focus {
-          outline: none;
-          background: rgba(255, 255, 255, 0.08);
-          border-color: rgba(139, 92, 246, 0.5);
-          box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
-        }
+         .field-input:focus {
+           outline: none;
+           background: rgba(30, 30, 40, 0.8);
+           border-color: #3b82f6;
+           box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+         }
 
-        .field-input.locked {
-          background: rgba(255, 255, 255, 0.03);
-          color: rgba(255, 255, 255, 0.5);
-          cursor: not-allowed;
-          border-color: rgba(255, 255, 255, 0.05);
-        }
+         .field-input.locked {
+           background: rgba(10, 10, 15, 0.3);
+           color: rgba(255, 255, 255, 0.5);
+           cursor: not-allowed;
+           border-color: rgba(255, 255, 255, 0.05);
+         }
 
         .field-input::placeholder {
           color: rgba(255, 255, 255, 0.4);
         }
 
         .create-record-footer {
-          padding: clamp(1.25rem, 3vw, 1.75rem);
-          background: rgba(15, 15, 25, 0.4);
-          backdrop-filter: blur(10px);
-          display: flex;
-          gap: clamp(0.75rem, 2vw, 1rem);
-          justify-content: flex-end;
-          border-top: 1px solid rgba(255, 255, 255, 0.1);
-          flex-shrink: 0;
-        }
+           padding: clamp(1.25rem, 3vw, 1.75rem);
+           background: rgba(20, 20, 30, 0.95);
+           backdrop-filter: blur(25px);
+           display: flex;
+           gap: clamp(0.75rem, 2vw, 1rem);
+           justify-content: flex-end;
+           border-top: 1px solid rgba(255, 255, 255, 0.1);
+           flex-shrink: 0;
+         }
 
         .btn {
           display: inline-flex;
@@ -412,28 +413,30 @@ const CreateRecordPage: React.FC = () => {
         }
 
         .btn-cancel {
-          background: rgba(255, 255, 255, 0.05);
-          color: rgba(255, 255, 255, 0.8);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-        }
+           background: rgba(71, 85, 105, 0.3);
+           color: white;
+           border: 1px solid rgba(255, 255, 255, 0.1);
+         }
 
-        .btn-cancel:hover {
-          background: rgba(255, 255, 255, 0.08);
-          border-color: rgba(255, 255, 255, 0.2);
-          transform: translateY(-1px);
-        }
+         .btn-cancel:hover {
+           background: rgba(71, 85, 105, 0.5);
+           border-color: rgba(255, 255, 255, 0.2);
+           transform: translateY(-1px);
+           box-shadow: 0 4px 16px rgba(71, 85, 105, 0.3);
+         }
 
         .btn-create {
-          background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
-          color: white;
-          border: 1px solid rgba(139, 92, 246, 0.3);
-          box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
-        }
+           background: rgba(34, 197, 94, 0.3);
+           color: white;
+           border: 1px solid rgba(34, 197, 94, 0.3);
+           box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+         }
 
-        .btn-create:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
-        }
+         .btn-create:hover {
+           background: rgba(34, 197, 94, 0.5);
+           transform: translateY(-2px);
+           box-shadow: 0 6px 20px rgba(34, 197, 94, 0.4);
+         }
 
         .btn:active {
           transform: translateY(0);
