@@ -9,6 +9,7 @@ const Pagina = lazy(() => import("./pages/database/pagina"));
 const AboutPage = lazy(() => import("./pages/home/about"));
 const EditarFila = lazy(() => import("./pages/database/editar_fila"));
 const InventarioDashboard = lazy(() => import("./pages/database/hub_tablas")); // Hub de tablas
+const CreateRecordPage = lazy(() => import("./pages/create-record/CreateRecordPage"));
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
         <Route path="/about" element={<AboutPage />} />
         <Route path="/hub_tablas" element={<InventarioDashboard />} />
         <Route path="/editar_fila" element={<EditarFila />} />
+        <Route path="/create-record" element={<CreateRecordPage />} />
       </Routes>
     </Suspense>
   );

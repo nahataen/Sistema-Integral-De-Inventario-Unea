@@ -19,6 +19,7 @@
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   backdrop-filter: blur(15px);
   -webkit-backdrop-filter: blur(15px);
+  will-change: backdrop-filter;
 }
 
 .tabla-safe-toolbar {
@@ -29,6 +30,7 @@
   background: rgba(20, 20, 30, 0.7);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(12px);
+  will-change: backdrop-filter;
 }
 
 .tabla-safe-title {
@@ -52,11 +54,12 @@
   border-radius: 0.5rem;
   border: 1px solid rgba(255, 255, 255, 0.1);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
   display: flex;
   align-items: center;
   gap: 0.25rem;
   backdrop-filter: blur(10px);
+  will-change: background-color, transform, box-shadow;
 }
 
 .tabla-safe-btn-delete {
@@ -168,11 +171,13 @@
   z-index: 10;
   white-space: nowrap;
   backdrop-filter: blur(12px);
+  will-change: backdrop-filter;
 }
 
 .tabla-safe-tr {
-  transition: all 0.15s ease;
+  transition: background-color 0.15s ease, transform 0.15s ease;
   cursor: pointer;
+  will-change: background-color, transform;
 }
 
 .tabla-safe-tr:hover {
@@ -212,8 +217,9 @@
   border-radius: 0.25rem;
   color: #e2e8f0;
   font-size: 0.875rem;
-  transition: all 0.2s ease;
+  transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
   backdrop-filter: blur(10px);
+  will-change: border-color, background-color, box-shadow;
 }
 
 .tabla-safe-input:focus {
@@ -273,6 +279,7 @@
   position: relative;
   display: flex;
   flex-direction: column;
+  will-change: backdrop-filter;
 }
 
 .tabla-safe-modal-create {
@@ -293,6 +300,7 @@
   background: rgba(20, 20, 30, 0.95);
   backdrop-filter: blur(25px);
   flex-shrink: 0;
+  will-change: backdrop-filter;
 }
 
 .tabla-safe-modal-header h3 {
@@ -367,6 +375,7 @@
   justify-content: flex-end;
   gap: 1.25rem;
   flex-shrink: 0;
+  will-change: backdrop-filter;
 }
 
 /* =========================

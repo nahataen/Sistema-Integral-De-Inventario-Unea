@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, memo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { invoke } from '@tauri-apps/api/tauri';
 import "../../styles/tabla.css";
 
@@ -31,7 +32,7 @@ interface ConsultaTablaFrontProps {
 // Componente
 // =========================================
 
-const TablaSegura: React.FC<ConsultaTablaFrontProps> = ({
+const TablaSegura: React.FC<ConsultaTablaFrontProps> = memo(({
   dbName,
   tableName,
   selectedRowId,
@@ -40,6 +41,7 @@ const TablaSegura: React.FC<ConsultaTablaFrontProps> = ({
   onDeleteRow,
   searchTerm = "",
 }) => {
+  const navigate = useNavigate();
 
   // Estados
   const [tableData, setTableData] = useState<TableData | null>(null);
@@ -49,18 +51,9 @@ const TablaSegura: React.FC<ConsultaTablaFrontProps> = ({
   const [editingRowId, setEditingRowId] = useState<number | null>(null);
   const [editData, setEditData] = useState<Record<string, any>>({});
 
-  const [showNewRecordModal, setShowNewRecordModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [newRecordData, setNewRecordData] = useState<Record<string, any>>({});
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // =========================================
-  // Evitar scroll cuando hay modal
-  // =========================================
-  useEffect(() => {
-    document.body.style.overflow = isModalOpen ? "hidden" : "";
-    return () => { document.body.style.overflow = ""; };
-  }, [isModalOpen]);
 
   // =========================================
   // Obtener datos de la tabla
@@ -69,7 +62,7 @@ const TablaSegura: React.FC<ConsultaTablaFrontProps> = ({
     if (dbName && tableName) fetchTableData();
   }, [dbName, tableName]);
 
-  const fetchTableData = async () => {
+  const fetchTableData = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -87,7 +80,7 @@ const TablaSegura: React.FC<ConsultaTablaFrontProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [dbName, tableName]);
 
   // =========================================
   // Filtrado
@@ -102,14 +95,13 @@ const TablaSegura: React.FC<ConsultaTablaFrontProps> = ({
         String(row[col] ?? "").toLowerCase().includes(lower)
       )
     );
-  }, [tableData, searchTerm]);
+  }, [tableData?.rows, tableData?.columns, searchTerm]);
 
   // =========================================
   // Obtener PK
   // =========================================
   const getRowPK = useCallback((rowIndex: number) => {
-    if (!tableData) return null;
-    if (!processedRows[rowIndex]) return null;
+    if (!tableData || !processedRows[rowIndex]) return null;
 
     const row = processedRows[rowIndex];
 
@@ -120,36 +112,36 @@ const TablaSegura: React.FC<ConsultaTablaFrontProps> = ({
     }
 
     return { name: pk, value: row[pk] };
-  }, [tableData, processedRows]);
+  }, [tableData?.columns, processedRows]);
 
   // =========================================
   // Obtener columna ID
   // =========================================
   const getIdColumn = useCallback(() => {
-    if (!tableData) return null;
+    if (!tableData?.columns) return null;
     const candidates = ["No", "no", "No.", "id", "ID", "rowid"];
     for (const c of candidates) {
       if (tableData.columns.includes(c)) return c;
     }
     return tableData.columns[0];
-  }, [tableData]);
+  }, [tableData?.columns]);
 
   // =========================================
   // Eventos
   // =========================================
 
-  const handleRowClick = (e: React.MouseEvent, index: number) => {
+  const handleRowClick = useCallback((e: React.MouseEvent, index: number) => {
     const tag = (e.target as HTMLElement).tagName;
     if (["INPUT", "BUTTON", "TEXTAREA"].includes(tag)) return;
     if (index >= 0) onRowSelect(index);
-  };
+  }, [onRowSelect]);
 
-  const handleCancelEdit = () => {
+  const handleCancelEdit = useCallback(() => {
     setEditingRowId(null);
     setEditData({});
-  };
+  }, []);
 
-  const handleSaveEdit = async () => {
+  const handleSaveEdit = useCallback(async () => {
     if (editingRowId === null || editingRowId < 0) return;
     if (!onSaveRow) return;
 
@@ -174,9 +166,9 @@ const TablaSegura: React.FC<ConsultaTablaFrontProps> = ({
     } catch (e) {
       alert(`Error: ${e}`);
     }
-  };
+  }, [editingRowId, editData, onSaveRow, getRowPK, fetchTableData]);
 
-  const handleConfirmDelete = async () => {
+  const handleConfirmDelete = useCallback(async () => {
     if (selectedRowId === null || selectedRowId < 0) return;
     if (!onDeleteRow) return;
 
@@ -194,68 +186,8 @@ const TablaSegura: React.FC<ConsultaTablaFrontProps> = ({
     } catch (e) {
       alert(`Error: ${e}`);
     }
-  };
+  }, [selectedRowId, onDeleteRow, getRowPK, fetchTableData, onRowSelect]);
 
-  const handleOpenNewRecordModal = () => {
-    if (!tableData) return;
-
-    const defaults: Record<string, any> = {};
-
-    // Generar ID autoincremental
-    const idColumn = getIdColumn();
-    if (idColumn) {
-      const maxId = tableData.rows.length > 0
-        ? Math.max(...tableData.rows.map(row => {
-            const val = row[idColumn];
-            return typeof val === 'number' ? val : parseInt(String(val)) || 0;
-          }))
-        : 0;
-      defaults[idColumn] = maxId + 1;
-    }
-
-    tableData.columns.forEach(col => {
-      const lower = col.toLowerCase();
-      if (lower === "zona") defaults[col] = "Centro/Noroeste";
-      else if (lower === "campus") defaults[col] = "Florido";
-      else if (!defaults[col]) defaults[col] = "";
-    });
-
-    setNewRecordData(defaults);
-    setShowNewRecordModal(true);
-    setIsModalOpen(true);
-  };
-
-  const handleSubmitNewRecord = async () => {
-    if (!tableData) return;
-
-    const payload = { ...newRecordData };
-
-    Object.keys(payload).forEach(k => {
-      if (payload[k] === "") payload[k] = null;
-    });
-
-    const idColumn = getIdColumn();
-    if (!idColumn) {
-      alert("Error: No se pudo determinar la columna ID");
-      return;
-    }
-
-    try {
-      await invoke("crear_registro_con_auto_incremento", {
-        registro: {
-          db_name: dbName,
-          table_name: tableName,
-          id_column: idColumn,
-          data: payload
-        }
-      });
-      await fetchTableData();
-      setShowNewRecordModal(false);
-      setIsModalOpen(false);
-    } catch (e) {
-      alert(`Error: ${e}`);
-    }
-  };
 
   // =========================================
   // Render
@@ -300,7 +232,7 @@ const TablaSegura: React.FC<ConsultaTablaFrontProps> = ({
 
                   <button
                     className="tabla-safe-btn tabla-safe-btn-create"
-                    onClick={handleOpenNewRecordModal}
+                    onClick={() => navigate('/create-record', { state: { dbName, tableName } })}
                   >
                     ➕ Nuevo
                   </button>
@@ -369,55 +301,6 @@ const TablaSegura: React.FC<ConsultaTablaFrontProps> = ({
         </div>
       </div>
 
-      {/* ========================= MODAL: Nuevo Registro ========================= */}
-      {showNewRecordModal && (
-        <div className="tabla-safe-overlay">
-          <div className="tabla-safe-modal tabla-safe-modal-create">
-            <div className="tabla-safe-modal-header">
-              <h3>Nuevo Registro</h3>
-            </div>
-
-            <div className="tabla-safe-modal-body">
-              <div className="tabla-safe-form-grid">
-                {tableData.columns.map(col => {
-                  const lower = col.toLowerCase();
-                  const isIdColumn = ["no", "no.", "id"].includes(lower);
-                  const locked = ["zona", "campus"].includes(lower) || isIdColumn;
-
-                  return (
-                    <div key={col} className="tabla-safe-field">
-                      <label>{col}</label>
-                      <input
-                        className="tabla-safe-input"
-                        value={newRecordData[col] ?? ""}
-                        onChange={(e) =>
-                          setNewRecordData({ ...newRecordData, [col]: e.target.value })
-                        }
-                        disabled={locked}
-                      />
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="tabla-safe-modal-footer">
-              <button
-                className="tabla-safe-btn tabla-safe-btn-cancel"
-                onClick={() => { setShowNewRecordModal(false); setIsModalOpen(false); }}
-              >
-                Cancelar
-              </button>
-              <button
-                className="tabla-safe-btn tabla-safe-btn-create"
-                onClick={handleSubmitNewRecord}
-              >
-                Crear
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* ========================= MODAL ELIMINAR ========================= */}
       {showDeleteModal && (
@@ -451,6 +334,8 @@ const TablaSegura: React.FC<ConsultaTablaFrontProps> = ({
 
     </>
   );
-};
+});
+
+TablaSegura.displayName = 'TablaSegura';
 
 export default TablaSegura;

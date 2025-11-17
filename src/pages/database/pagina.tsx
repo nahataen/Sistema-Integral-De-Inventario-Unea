@@ -14,9 +14,7 @@ const Pagina = () => {
   const [selectedRowId, setSelectedRowId] = useState<number | null>(null);
 
   const handleRowSelect = (rowId: number) => {
-    console.log(`handleRowSelect llamado con rowId: ${rowId}, selectedRowId actual: ${selectedRowId}`);
     const newSelectedId = selectedRowId === rowId ? null : rowId;
-    console.log(`Nuevo selectedRowId: ${newSelectedId}`);
     setSelectedRowId(newSelectedId);
   };
 

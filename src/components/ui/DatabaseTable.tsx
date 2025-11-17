@@ -1,7 +1,7 @@
 import { invoke } from '@tauri-apps/api/tauri';
 import { save } from '@tauri-apps/api/dialog';
 import { dirname } from '@tauri-apps/api/path';
-import { useState } from 'react';
+import { useState, useCallback, memo } from 'react';
 import type { Database } from "../../types";
 import { useNavigate } from "react-router-dom";
 import styles from "./DatabaseTable.module.css";
@@ -11,7 +11,7 @@ interface DatabaseTableProps {
   onRefresh: () => void;
 }
 
-const DatabaseTable = ({ databases, onRefresh }: DatabaseTableProps) => {
+const DatabaseTable = memo(({ databases, onRefresh }: DatabaseTableProps) => {
   const navigate = useNavigate();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleteCandidate, setDeleteCandidate] = useState<string | null>(null);
@@ -24,7 +24,7 @@ const DatabaseTable = ({ databases, onRefresh }: DatabaseTableProps) => {
     );
   }
 
-  const handleExport = async (name: string) => {
+  const handleExport = useCallback(async (name: string) => {
     try {
       const targetPath = await save({
         title: 'Guardar exportación',
@@ -42,14 +42,14 @@ const DatabaseTable = ({ databases, onRefresh }: DatabaseTableProps) => {
       console.error('Error al exportar:', error);
       alert('Error al exportar la base de datos');
     }
-  };
+  }, []);
 
-  const handleDelete = (name: string) => {
+  const handleDelete = useCallback((name: string) => {
     setDeleteCandidate(name);
     setShowDeleteDialog(true);
-  };
+  }, []);
 
-  const confirmDelete = async () => {
+  const confirmDelete = useCallback(async () => {
     if (deleteCandidate) {
       try {
         await invoke('delete_database', { name: deleteCandidate, confirmed: true });
@@ -62,7 +62,7 @@ const DatabaseTable = ({ databases, onRefresh }: DatabaseTableProps) => {
     }
     setShowDeleteDialog(false);
     setDeleteCandidate(null);
-  };
+  }, [deleteCandidate, onRefresh]);
 
   return (
     <>
@@ -167,6 +167,8 @@ const DatabaseTable = ({ databases, onRefresh }: DatabaseTableProps) => {
       )}
     </>
   );
-};
+});
+
+DatabaseTable.displayName = 'DatabaseTable';
 
 export default DatabaseTable;

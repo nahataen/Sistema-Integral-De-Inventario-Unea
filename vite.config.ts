@@ -10,6 +10,22 @@ export default defineConfig({
   //configurar el puerto
   server: {
     port: 3000
+  },
+  build: {
+    target: 'esnext',
+    minify: 'esbuild',
+    cssMinify: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          tauri: ['@tauri-apps/api']
+        }
+      }
+    }
+  },
+  optimizeDeps: {
+    include: ['react', 'react-dom', '@tauri-apps/api']
   }
 
 })
