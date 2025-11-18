@@ -215,7 +215,7 @@ const CreateRecordPage: React.FC = () => {
         </div>
       </div>
 
-      <style jsx>{`
+      <style>{`
         .create-record-container {
            min-height: 100vh;
            max-height: 100vh;
