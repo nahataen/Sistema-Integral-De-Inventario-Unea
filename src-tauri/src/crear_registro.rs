@@ -117,19 +117,46 @@ pub fn crear_registro_con_auto_incremento(
 
     for col in columns.iter() {
         if let Some(v) = data_with_id.get(col) {
-            match v {
-                serde_json::Value::String(s) => params.push(Box::new(s.clone())),
-                serde_json::Value::Number(n) => {
-                    if let Some(i) = n.as_i64() { params.push(Box::new(i)); }
-                    else if let Some(f) = n.as_f64() { params.push(Box::new(f)); }
-                    else { params.push(Box::new(rusqlite::types::Null)); }
+            if col == &registro.id_column {
+                // Always treat ID as text, as the auto-increment query uses CAST.
+                match v {
+                    serde_json::Value::Number(n) => params.push(Box::new(n.to_string())),
+                    _ => params.push(Box::new(v.to_string())), // Fallback for safety
                 }
-                serde_json::Value::Bool(b) => params.push(Box::new(*b as i32)),
-                serde_json::Value::Null => params.push(Box::new(rusqlite::types::Null)),
-                _ => params.push(Box::new(v.to_string())),
+            } else if col == "zona_campus" {
+                // Keep original logic for zona_campus
+                match v {
+                    serde_json::Value::String(s) => params.push(Box::new(s.clone())),
+                    serde_json::Value::Number(n) => {
+                        if let Some(i) = n.as_i64() { params.push(Box::new(i)); }
+                        else if let Some(f) = n.as_f64() { params.push(Box::new(f)); }
+                        else { params.push(Box::new(rusqlite::types::Null)); }
+                    }
+                    serde_json::Value::Bool(b) => params.push(Box::new(*b as i32)),
+                    serde_json::Value::Null => params.push(Box::new(rusqlite::types::Null)),
+                    _ => params.push(Box::new(v.to_string())),
+                }
+            } else {
+                // For all other columns, insert as text, and use empty string instead of null.
+                match v {
+                    serde_json::Value::Null => params.push(Box::new("".to_string())),
+                    serde_json::Value::String(s) => params.push(Box::new(s.clone())),
+                    serde_json::Value::Number(n) => params.push(Box::new(n.to_string())),
+                    serde_json::Value::Bool(b) => params.push(Box::new(b.to_string())),
+                    serde_json::Value::Array(_) | serde_json::Value::Object(_) => params.push(Box::new(v.to_string())),
+                }
             }
         } else {
-            params.push(Box::new(rusqlite::types::Null));
+            // If the key is not present, decide what to insert.
+            if col == &registro.id_column {
+                // This shouldn't be reached due to auto-increment logic, but as a safeguard.
+                params.push(Box::new(rusqlite::types::Null));
+            } else if col == "zona_campus" {
+                params.push(Box::new(rusqlite::types::Null));
+            } else {
+                // For other columns, use an empty string to satisfy NOT NULL constraints.
+                params.push(Box::new("".to_string()));
+            }
         }
     }
 
