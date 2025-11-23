@@ -5,7 +5,9 @@ import { open, save } from "@tauri-apps/api/dialog";
 import { readTextFile, writeTextFile } from "@tauri-apps/api/fs";
 import toast, { Toaster } from "react-hot-toast";
 import TableCard from "../../components/ui/TableCard";
+import CreateTableModal from "../../components/ui/CreateTableModal";
 import Sidebar from "../../components/layout/Sidebar"; // 👈 Nuevo import del Sidebar
+import { TableCreationProvider, useTableCreation } from "../../context";
 import styles from "../../styles/InventarioDashboard.module.css";
 
 export interface TableInfo {
@@ -13,10 +15,11 @@ export interface TableInfo {
   image_path?: string;
 }
 
-const InventarioDashboard = () => {
+const InventarioDashboardContent = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const dbName = location.state?.dbName || "Desconocida";
+  const { openModal } = useTableCreation();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [tableData, setTableData] = useState<TableInfo[]>([]);
@@ -230,6 +233,31 @@ const InventarioDashboard = () => {
           </div>
 
           <button
+            onClick={openModal}
+            className={styles.createButton}
+            style={{
+              padding: '8px 16px',
+              background: 'rgba(34, 197, 94, 0.3)',
+              color: '#ffffff',
+              border: '1px solid rgba(34, 197, 94, 0.4)',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: '600',
+              transition: 'all 0.2s ease',
+              backdropFilter: 'blur(10px)'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(34, 197, 94, 0.4)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'rgba(34, 197, 94, 0.3)';
+            }}
+          >
+            Crear Tabla
+          </button>
+
+          <button
             onClick={handleImportTable}
             className={styles.importButton}
             style={{
@@ -416,9 +444,17 @@ const InventarioDashboard = () => {
         </div>
       )}
 
+      <CreateTableModal dbName={dbName} onRefresh={() => setRefreshKey((prev) => prev + 1)} />
+
       <Toaster position="bottom-right" />
     </div>
   );
 };
+
+const InventarioDashboard = () => (
+  <TableCreationProvider>
+    <InventarioDashboardContent />
+  </TableCreationProvider>
+);
 
 export default InventarioDashboard;

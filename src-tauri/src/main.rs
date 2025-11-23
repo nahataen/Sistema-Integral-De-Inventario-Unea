@@ -9,6 +9,8 @@ mod io_utils; // NUEVO: Declara el módulo compartido.
 mod exportar_tabla; // NUEVO: Declara el módulo de exportación.
 mod importar_tabla; // NUEVO: Declara el módulo de importación.
 mod crear_registro; // <--- NUEVO
+mod ingresar_img_thumbnails;
+mod eliminar_columna;
 use tauri::Builder;
 
 use database_manager::{
@@ -20,7 +22,7 @@ use database_manager::{
     open_directory,
 };
 
-use hub_tablas::{ list_tables, delete_table, upload_table_image, delete_table_image };
+use hub_tablas::{ create_table, list_tables, delete_table, upload_table_image, delete_table_image };
 
 use consulta_tablas::consulta_tabla;
 use editar::execute_sql;
@@ -40,6 +42,7 @@ fn main() {
                 import_database,
                 export_database,
                 delete_database,
+                create_table,
                 list_tables,
                 delete_table,
                 upload_table_image,
@@ -55,6 +58,8 @@ fn main() {
                 exportar_tabla::export_table_to_json,
                 importar_tabla::import_table_from_json,
                 importar_tabla::import_table_from_json_with_options,
+                ingresar_img_thumbnails::add_new_column,
+                eliminar_columna::delete_column,
             ]
         )
         .run(tauri::generate_context!())

@@ -1,11 +1,14 @@
 import React, { useState, useEffect, useMemo, useCallback, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { invoke } from '@tauri-apps/api/tauri';
+import toast from 'react-hot-toast';
 import "../../styles/tabla.css";
 
 // =========================================
-// Tipos
+// Tipos y Constantes
 // =========================================
+
+const PROTECTED_COLUMNS = ["ID", "Zona", "Campus"];
 
 interface TableData {
   table_name: string;
@@ -54,6 +57,13 @@ const TablaSegura: React.FC<ConsultaTablaFrontProps> = memo(({
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  const [isAddColumnModalOpen, setIsAddColumnModalOpen] = useState(false);
+  const [newColumnName, setNewColumnName] = useState('');
+  const [newColumnType, setNewColumnType] = useState('text');
+
+  const [showDeleteColumnModal, setShowDeleteColumnModal] = useState(false);
+  const [columnToDelete, setColumnToDelete] = useState<string | null>(null);
+
 
   // =========================================
   // Obtener datos de la tabla
@@ -77,13 +87,14 @@ const TablaSegura: React.FC<ConsultaTablaFrontProps> = memo(({
       setTableData({ ...response, rows: sanitizedRows });
     } catch (e) {
       setError("No se pudieron cargar los datos.");
+      toast.error("No se pudieron cargar los datos de la tabla.");
     } finally {
       setLoading(false);
     }
   }, [dbName, tableName]);
 
   // =========================================
-  // Filtrado
+  // Lógica de UI
   // =========================================
   const processedRows = useMemo(() => {
     if (!tableData) return [];
@@ -97,34 +108,16 @@ const TablaSegura: React.FC<ConsultaTablaFrontProps> = memo(({
     );
   }, [tableData?.rows, tableData?.columns, searchTerm]);
 
-  // =========================================
-  // Obtener PK
-  // =========================================
   const getRowPK = useCallback((rowIndex: number) => {
     if (!tableData || !processedRows[rowIndex]) return null;
-
     const row = processedRows[rowIndex];
-
     let pk = tableData.columns[0];
     const candidates = ["No", "no", "No.", "id", "ID", "rowid"];
     for (const c of candidates) {
       if (tableData.columns.includes(c)) { pk = c; break; }
     }
-
     return { name: pk, value: row[pk] };
   }, [tableData?.columns, processedRows]);
-
-  // =========================================
-  // Obtener columna ID
-  // =========================================
-  const getIdColumn = useCallback(() => {
-    if (!tableData?.columns) return null;
-    const candidates = ["No", "no", "No.", "id", "ID", "rowid"];
-    for (const c of candidates) {
-      if (tableData.columns.includes(c)) return c;
-    }
-    return tableData.columns[0];
-  }, [tableData?.columns]);
 
   // =========================================
   // Eventos
@@ -132,7 +125,7 @@ const TablaSegura: React.FC<ConsultaTablaFrontProps> = memo(({
 
   const handleRowClick = useCallback((e: React.MouseEvent, index: number) => {
     const tag = (e.target as HTMLElement).tagName;
-    if (["INPUT", "BUTTON", "TEXTAREA"].includes(tag)) return;
+    if (["INPUT", "BUTTON", "TEXTAREA", "SELECT"].includes(tag)) return;
     if (index >= 0) onRowSelect(index);
   }, [onRowSelect]);
 
@@ -146,7 +139,7 @@ const TablaSegura: React.FC<ConsultaTablaFrontProps> = memo(({
     if (!onSaveRow) return;
 
     const pk = getRowPK(editingRowId);
-    if (!pk) return alert("Error: PK no encontrada.");
+    if (!pk) return toast.error("Error: Llave primaria no encontrada para guardar.");
 
     const payload = { ...editData };
     delete payload[pk.name];
@@ -160,18 +153,18 @@ const TablaSegura: React.FC<ConsultaTablaFrontProps> = memo(({
       if (ok) {
         await fetchTableData();
         setEditingRowId(null);
+        toast.success("Fila guardada exitosamente.");
       } else {
-        alert("No se pudo guardar.");
+        toast.error("No se pudo guardar la fila.");
       }
     } catch (e) {
-      alert(`Error: ${e}`);
+      toast.error(`Error al guardar: ${e}`);
     }
   }, [editingRowId, editData, onSaveRow, getRowPK, fetchTableData]);
 
   const handleConfirmDelete = useCallback(async () => {
     if (selectedRowId === null || selectedRowId < 0) return;
     if (!onDeleteRow) return;
-
     const pk = getRowPK(selectedRowId);
     if (!pk) return;
 
@@ -180,14 +173,53 @@ const TablaSegura: React.FC<ConsultaTablaFrontProps> = memo(({
       if (ok) {
         await fetchTableData();
         setShowDeleteModal(false);
-        setIsModalOpen(false);
         onRowSelect(-1);
+        toast.success("Registro eliminado.");
       }
     } catch (e) {
-      alert(`Error: ${e}`);
+      toast.error(`Error al eliminar: ${e}`);
     }
   }, [selectedRowId, onDeleteRow, getRowPK, fetchTableData, onRowSelect]);
 
+  const handleConfirmAddColumn = useCallback(async () => {
+    if (!newColumnName.trim()) {
+      return toast.error("El nombre de la columna no puede estar vacío.");
+    }
+
+    try {
+      await invoke('add_new_column', {
+        dbName,
+        tableName,
+        columnName: newColumnName,
+        columnType: newColumnType,
+      });
+      toast.success(`Columna "${newColumnName}" añadida exitosamente.`);
+      await fetchTableData();
+      setIsAddColumnModalOpen(false);
+      setNewColumnName('');
+      setNewColumnType('text');
+    } catch (e) {
+      toast.error(`Error al añadir columna: ${e}`);
+    }
+  }, [dbName, tableName, newColumnName, newColumnType, fetchTableData]);
+
+  const handleConfirmDeleteColumn = useCallback(async () => {
+    if (!columnToDelete) return;
+
+    try {
+      await invoke('delete_column', {
+        dbName,
+        tableName,
+        columnName: columnToDelete,
+      });
+      toast.success(`Columna "${columnToDelete}" eliminada.`);
+      await fetchTableData();
+      setShowDeleteColumnModal(false);
+      setColumnToDelete(null);
+    } catch (e) {
+      toast.error(`Error al eliminar columna: ${e}`);
+    }
+  }, [dbName, tableName, columnToDelete, fetchTableData]);
 
   // =========================================
   // Render
@@ -201,22 +233,18 @@ const TablaSegura: React.FC<ConsultaTablaFrontProps> = memo(({
     <>
       <div className="tabla-safe-wrapper">
         <div className="tabla-safe">
-
-          {/* Toolbar */}
           <div className="tabla-safe-toolbar">
             <h2 className="tabla-safe-title">{tableData.table_name}</h2>
-
             <div className="tabla-safe-actions">
               {editingRowId === null ? (
                 <>
                   <button
                     className="tabla-safe-btn tabla-safe-btn-delete"
                     disabled={selectedRowId === null || selectedRowId < 0}
-                    onClick={() => { setShowDeleteModal(true); setIsModalOpen(true); }}
+                    onClick={() => setShowDeleteModal(true)}
                   >
-                    🗑️ Eliminar
+                    🗑️ Eliminar Fila
                   </button>
-
                   <button
                     className="tabla-safe-btn tabla-safe-btn-edit"
                     disabled={selectedRowId === null || selectedRowId < 0}
@@ -227,14 +255,19 @@ const TablaSegura: React.FC<ConsultaTablaFrontProps> = memo(({
                       }
                     }}
                   >
-                    ✏️ Editar
+                    ✏️ Editar Fila
                   </button>
-
+                  <button
+                    className="tabla-safe-btn tabla-safe-btn-add-column"
+                    onClick={() => setIsAddColumnModalOpen(true)}
+                  >
+                    ➕ Añadir Columna
+                  </button>
                   <button
                     className="tabla-safe-btn tabla-safe-btn-create"
                     onClick={() => navigate('/create-record', { state: { dbName, tableName } })}
                   >
-                    ➕ Nuevo
+                    ➕ Nuevo Registro
                   </button>
                 </>
               ) : (
@@ -250,21 +283,37 @@ const TablaSegura: React.FC<ConsultaTablaFrontProps> = memo(({
             </div>
           </div>
 
-          {/* Tabla */}
           <div className="tabla-safe-viewport">
             <table className="tabla-safe-grid">
               <thead>
                 <tr>
-                  {tableData.columns.map(col => (
-                    <th key={col} className="tabla-safe-th">{col}</th>
-                  ))}
+                  {tableData.columns.map(col => {
+                    const isProtected = PROTECTED_COLUMNS.some(pCol => pCol.toLowerCase() === col.toLowerCase());
+                    return (
+                      <th key={col} className="tabla-safe-th">
+                        {col}
+                        {!isProtected && (
+                          <button
+                            className="tabla-safe-th-delete"
+                            title={`Eliminar columna "${col}"`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setColumnToDelete(col);
+                              setShowDeleteColumnModal(true);
+                            }}
+                          >
+                            ×
+                          </button>
+                        )}
+                      </th>
+                    );
+                  })}
                 </tr>
               </thead>
               <tbody>
                 {processedRows.map((row, idx) => {
                   const isSelected = selectedRowId === idx;
                   const isEditing = editingRowId === idx;
-
                   return (
                     <tr
                       key={idx}
@@ -282,9 +331,7 @@ const TablaSegura: React.FC<ConsultaTablaFrontProps> = memo(({
                               <input
                                 className="tabla-safe-input"
                                 value={editData[col] ?? ""}
-                                onChange={(e) =>
-                                  setEditData({ ...editData, [col]: e.target.value })
-                                }
+                                onChange={(e) => setEditData({ ...editData, [col]: e.target.value })}
                               />
                             ) : (
                               <span className="tabla-safe-text">{row[col] ?? ""}</span>
@@ -301,41 +348,54 @@ const TablaSegura: React.FC<ConsultaTablaFrontProps> = memo(({
         </div>
       </div>
 
-
-      {/* ========================= MODAL ELIMINAR ========================= */}
+      {/* Modals */}
       {showDeleteModal && (
         <div className="tabla-safe-overlay">
-          <div className="tabla-safe-modal tabla-safe-modal-delete">
-            <div className="tabla-safe-modal-header">
-              <h3>Confirmar Eliminación</h3>
-            </div>
-
-            <div className="tabla-safe-modal-body">
-              <p>¿Eliminar este registro permanentemente?</p>
-            </div>
-
+          <div className="tabla-safe-modal">
+            <h3>Confirmar Eliminación de Fila</h3>
+            <p>¿Eliminar este registro permanentemente?</p>
             <div className="tabla-safe-modal-footer">
-              <button
-                className="tabla-safe-btn tabla-safe-btn-cancel"
-                onClick={() => { setShowDeleteModal(false); setIsModalOpen(false); }}
-              >
-                Cancelar
-              </button>
-              <button
-                className="tabla-safe-btn tabla-safe-btn-delete"
-                onClick={handleConfirmDelete}
-              >
-                Eliminar
-              </button>
+              <button className="tabla-safe-btn tabla-safe-btn-cancel" onClick={() => setShowDeleteModal(false)}>Cancelar</button>
+              <button className="tabla-safe-btn tabla-safe-btn-delete" onClick={handleConfirmDelete}>Eliminar</button>
             </div>
           </div>
         </div>
       )}
-
+      {isAddColumnModalOpen && (
+        <div className="tabla-safe-overlay">
+          <div className="tabla-safe-modal">
+            <h3>Añadir Nueva Columna</h3>
+            <div className="tabla-safe-modal-body">
+              <label>Nombre de la Columna</label>
+              <input type="text" className="tabla-safe-input" value={newColumnName} onChange={(e) => setNewColumnName(e.target.value)} placeholder="Ej: Descripcion"/>
+              <label>Tipo de Columna</label>
+              <select className="tabla-safe-input" value={newColumnType} onChange={(e) => setNewColumnType(e.target.value)}>
+                <option value="text">Texto</option>
+                <option value="image">Imagen</option>
+              </select>
+            </div>
+            <div className="tabla-safe-modal-footer">
+              <button className="tabla-safe-btn tabla-safe-btn-cancel" onClick={() => setIsAddColumnModalOpen(false)}>Cancelar</button>
+              <button className="tabla-safe-btn tabla-safe-btn-save" onClick={handleConfirmAddColumn}>Guardar</button>
+            </div>
+          </div>
+        </div>
+      )}
+      {showDeleteColumnModal && (
+        <div className="tabla-safe-overlay">
+          <div className="tabla-safe-modal">
+            <h3>Confirmar Eliminación de Columna</h3>
+            <p>¿Seguro que quieres eliminar la columna <strong>"{columnToDelete}"</strong>? Esta acción no se puede deshacer.</p>
+            <div className="tabla-safe-modal-footer">
+              <button className="tabla-safe-btn tabla-safe-btn-cancel" onClick={() => setShowDeleteColumnModal(false)}>Cancelar</button>
+              <button className="tabla-safe-btn tabla-safe-btn-delete" onClick={handleConfirmDeleteColumn}>Eliminar</button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 });
 
 TablaSegura.displayName = 'TablaSegura';
-
 export default TablaSegura;

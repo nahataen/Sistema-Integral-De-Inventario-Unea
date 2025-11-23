@@ -53,6 +53,30 @@ fn get_table_image_path(state: &State<AppState>, db_name: &str, table_name: &str
 }
 
 #[tauri::command]
+pub fn create_table(state: State<AppState>, db_name: String, table_name: String) -> Result<(), String> {
+    let db_path = state.db_dir.join(format!("{}.db", db_name));
+    let sqlite_path = state.db_dir.join(format!("{}.sqlite", db_name));
+
+    let db_file = if db_path.exists() {
+        db_path
+    } else if sqlite_path.exists() {
+        sqlite_path
+    } else {
+        return Err(format!("No se encontró la base de datos: {}", db_name));
+    };
+
+    let conn = rusqlite::Connection::open(&db_file)
+        .map_err(|e| format!("Error al abrir la base de datos: {}", e))?;
+
+    // Create table with a basic structure: id as TEXT PRIMARY KEY
+    let sql = format!("CREATE TABLE \"{}\" (id TEXT PRIMARY KEY)", table_name);
+    conn.execute(&sql, [])
+        .map_err(|e| format!("Error al crear la tabla: {}", e))?;
+
+    Ok(())
+}
+
+#[tauri::command]
 pub fn list_tables(state: State<AppState>, db_name: String) -> Result<Vec<TableInfo>, String> {
     let db_path = state.db_dir.join(format!("{}.db", db_name));
     let sqlite_path = state.db_dir.join(format!("{}.sqlite", db_name));
