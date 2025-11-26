@@ -1,43 +1,43 @@
-/* ImportarExportar.css - Black Glassmorphism */
+/* ImportarExportar.css - Theme Support */
 
 .impexp-container {
   width: 100%;
   max-width: 900px;
   margin: 0 auto;
   padding: 2rem;
-  background: rgba(10, 10, 15, 0.6);
+  background: var(--surface-color);
   border-radius: 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-color);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7);
+  box-shadow: var(--shadow);
   animation: fadeIn 0.3s ease-out;
 }
 
 .impexp-title {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--text-color);
   margin-bottom: 1.5rem;
   text-align: center;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+  text-shadow: var(--shadow-color);
 }
 
 .impexp-label {
   display: block;
   font-size: 0.9rem;
   font-weight: 600;
-  color: #e0e0e0;
+  color: var(--text-secondary-color);
   margin-bottom: 0.5rem;
 }
 
 .impexp-selected {
   width: 100%;
   padding: 1rem;
-  background: rgba(20, 20, 30, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--secondary-color);
+  border: 1px solid var(--border-color);
   border-radius: 0.75rem;
-  color: #ffffff;
+  color: var(--text-color);
   cursor: pointer;
   font-size: 1rem;
   display: flex;
@@ -48,14 +48,14 @@
 }
 
 .impexp-selected:hover {
-  background: rgba(30, 30, 45, 0.8);
+  background: var(--surface-color);
   transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--shadow-light);
 }
 
 .impexp-arrow {
   transition: transform 0.2s ease;
-  color: #cccccc;
+  color: var(--text-secondary-color);
 }
 
 .impexp-options-container {
@@ -65,11 +65,11 @@
   transform: translate(-50%, -50%);
   width: 90%;
   max-width: 500px;
-  background: rgba(15, 15, 25, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--surface-color);
+  border: 1px solid var(--border-color);
   border-radius: 1rem;
   backdrop-filter: blur(25px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.8);
+  box-shadow: var(--shadow);
   max-height: 60vh;
   overflow-y: auto;
   z-index: 10000;
@@ -83,15 +83,15 @@
 
 .impexp-option {
   padding: 1rem;
-  color: #ffffff;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  color: var(--text-color);
+  border-bottom: 1px solid var(--border-color);
   cursor: pointer;
   transition: background 0.15s ease;
   font-size: 1rem;
 }
 
 .impexp-option:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--secondary-color);
 }
 
 .impexp-buttons-group {
@@ -108,30 +108,30 @@
   font-weight: 600;
   border-radius: 0.75rem;
   cursor: pointer;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: white;
+  border: 1px solid var(--border-color);
+  color: var(--text-color);
   transition: all 0.3s ease;
   backdrop-filter: blur(10px);
 }
 
 .impexp-btn-export {
-  background: rgba(34, 197, 94, 0.3);
+  background: var(--success-color);
 }
 
 .impexp-btn-export:hover:not(:disabled) {
-  background: rgba(34, 197, 94, 0.4);
+  background: var(--success-hover);
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(34, 197, 94, 0.3);
+  box-shadow: var(--shadow-light);
 }
 
 .impexp-btn-import {
-  background: rgba(37, 99, 235, 0.3);
+  background: var(--primary-color);
 }
 
 .impexp-btn-import:hover:not(:disabled) {
-  background: rgba(37, 99, 235, 0.4);
+  background: var(--primary-color);
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.3);
+  box-shadow: var(--shadow-light);
 }
 
 .impexp-button:disabled {
@@ -142,15 +142,15 @@
 .impexp-feedback {
   text-align: center;
   font-size: 1rem;
-  color: #4ade80;
+  color: var(--success-color);
   margin-top: 1rem;
-  text-shadow: 0 1px 5px rgba(0, 0, 0, 0.5);
+  text-shadow: var(--shadow-color);
 }
 
 .impexp-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: var(--shadow-color);
   backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
@@ -160,12 +160,12 @@
 }
 
 .impexp-modal-content {
-  background: rgba(10, 10, 15, 0.7);
+  background: var(--surface-color);
   padding: 2.5rem;
   border-radius: 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-color);
   backdrop-filter: blur(25px);
-  box-shadow: 0 12px 50px rgba(0, 0, 0, 0.8);
+  box-shadow: var(--shadow);
   width: 100%;
   max-width: 500px;
   animation: scaleIn 0.25s ease-out;
@@ -174,14 +174,14 @@
 .impexp-modal-title {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--text-color);
   text-align: center;
   margin-bottom: 1rem;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+  text-shadow: var(--shadow-color);
 }
 
 .impexp-modal-text {
-  color: #d0d0d0;
+  color: var(--text-secondary-color);
   font-size: 1rem;
   margin-bottom: 1.5rem;
   text-align: center;
@@ -190,18 +190,18 @@
 .impexp-input {
   width: 100%;
   padding: 1rem;
-  background: rgba(25, 25, 35, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: var(--secondary-color);
+  border: 1px solid var(--border-color);
   border-radius: 0.75rem;
-  color: #ffffff;
+  color: var(--text-color);
   font-size: 1rem;
   transition: all 0.2s ease;
   backdrop-filter: blur(10px);
 }
 
 .impexp-input:focus {
-  border-color: rgba(59, 130, 246, 0.8);
-  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 4px var(--primary-color);
   outline: none;
 }
 
@@ -217,30 +217,30 @@
   font-weight: 700;
   border-radius: 0.75rem;
   cursor: pointer;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-color);
   transition: all 0.3s ease;
   backdrop-filter: blur(10px);
 }
 
 .impexp-modal-btn-rename {
-  background: rgba(37, 99, 235, 0.3);
-  color: #dbeafe;
+  background: var(--primary-color);
+  color: var(--text-color);
 }
 
 .impexp-modal-btn-overwrite {
-  background: rgba(239, 68, 68, 0.3);
-  color: #fee2e2;
+  background: var(--danger-color);
+  color: var(--text-color);
 }
 
 .impexp-modal-btn-cancel {
-  background: rgba(100, 115, 140, 0.3);
-  color: #ffffff;
+  background: var(--text-secondary-color);
+  color: var(--text-color);
 }
 
 .impexp-modal-btn:hover:not(:disabled) {
   transform: translateY(-2px);
   filter: brightness(1.1);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--shadow-light);
 }
 
 .impexp-modal-btn:disabled {
@@ -255,6 +255,14 @@
 @keyframes scaleIn {
   from { opacity: 0; transform: scale(0.9); }
   to { opacity: 1; transform: scale(1); }
+}
+
+/* Light mode button text colors */
+[data-theme="light"] .impexp-btn-export,
+[data-theme="light"] .impexp-btn-import,
+[data-theme="light"] .impexp-modal-btn-rename,
+[data-theme="light"] .impexp-modal-btn-overwrite {
+  color: white;
 }
 
 @media (min-width: 640px) {

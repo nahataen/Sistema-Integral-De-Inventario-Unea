@@ -3,6 +3,11 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { invoke } from '@tauri-apps/api/tauri';
 import "../../styles/tabla.css";
 
+interface ColumnInfo {
+  name: string;
+  type_: string;
+}
+
 // =========================================
 // Tipos
 // =========================================
@@ -27,6 +32,7 @@ const CreateRecordPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [newRecordData, setNewRecordData] = useState<Record<string, any>>({});
+  const [columnTypes, setColumnTypes] = useState<Record<string, string>>({});
 
   // =========================================
   // Obtener datos de la tabla
@@ -48,6 +54,14 @@ const CreateRecordPage: React.FC = () => {
       });
 
       setTableData({ ...response, rows: sanitizedRows });
+
+      // Fetch column types
+      const columnInfo: ColumnInfo[] = await invoke("get_column_info", { dbName, tableName });
+      const types: Record<string, string> = {};
+      columnInfo.forEach(col => {
+        types[col.name] = col.type_;
+      });
+      setColumnTypes(types);
 
       // Inicializar datos del nuevo registro
       initializeNewRecordData({ ...response, rows: sanitizedRows });
@@ -98,6 +112,13 @@ const CreateRecordPage: React.FC = () => {
   }, []);
 
   // =========================================
+  // Verificar si es columna de imagen
+  // =========================================
+  const isImageColumn = useCallback((columnName: string) => {
+    return columnTypes[columnName] === "BLOB";
+  }, [columnTypes]);
+
+  // =========================================
   // Eventos
   // =========================================
 
@@ -108,6 +129,11 @@ const CreateRecordPage: React.FC = () => {
 
     Object.keys(payload).forEach(k => {
       if (payload[k] === "") payload[k] = null;
+      // For image columns, extract base64 data from data URL
+      if (isImageColumn(k) && typeof payload[k] === 'string' && payload[k].startsWith('data:image/')) {
+        const base64Data = payload[k].split(',')[1]; // Remove "data:image/png;base64," prefix
+        payload[k] = base64Data;
+      }
     });
 
     const idColumn = getIdColumn(tableData.columns);
@@ -130,7 +156,7 @@ const CreateRecordPage: React.FC = () => {
     } catch (e) {
       alert(`Error: ${e}`);
     }
-  }, [tableData, newRecordData, getIdColumn, dbName, tableName, navigate]);
+  }, [tableData, newRecordData, getIdColumn, dbName, tableName, navigate, isImageColumn]);
 
   const handleCancel = useCallback(() => {
     navigate(-1);
@@ -170,6 +196,7 @@ const CreateRecordPage: React.FC = () => {
                 const lower = col.toLowerCase();
                 const isIdColumn = ["no", "no.", "id"].includes(lower);
                 const locked = ["zona", "campus"].includes(lower) || isIdColumn;
+                const isImage = isImageColumn(col);
 
                 return (
                   <div key={col} className="field-group">
@@ -183,14 +210,35 @@ const CreateRecordPage: React.FC = () => {
                         </span>
                       )}
                     </label>
-                    <input
-                      type="text"
-                      className={`field-input ${locked ? 'locked' : ''}`}
-                      value={newRecordData[col] ?? ""}
-                      onChange={(e) => setNewRecordData({ ...newRecordData, [col]: e.target.value })}
-                      disabled={locked}
-                      placeholder={locked ? "Campo bloqueado" : `Ingrese ${col.toLowerCase()}`}
-                    />
+                    {isImage ? (
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className={`field-input ${locked ? 'locked' : ''}`}
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            // Convert file to base64
+                            const reader = new FileReader();
+                            reader.onload = (event) => {
+                              const base64 = event.target?.result as string;
+                              setNewRecordData({ ...newRecordData, [col]: base64 });
+                            };
+                            reader.readAsDataURL(file);
+                          }
+                        }}
+                        disabled={locked}
+                      />
+                    ) : (
+                      <input
+                        type="text"
+                        className={`field-input ${locked ? 'locked' : ''}`}
+                        value={newRecordData[col] ?? ""}
+                        onChange={(e) => setNewRecordData({ ...newRecordData, [col]: e.target.value })}
+                        disabled={locked}
+                        placeholder={locked ? "Campo bloqueado" : `Ingrese ${col.toLowerCase()}`}
+                      />
+                    )}
                   </div>
                 );
               })}
@@ -219,7 +267,7 @@ const CreateRecordPage: React.FC = () => {
         .create-record-container {
            min-height: 100vh;
            max-height: 100vh;
-           background: rgba(10, 10, 15, 0.8);
+           background: var(--bg-color);
            padding: clamp(1rem, 3vw, 2rem);
            display: flex;
            align-items: center;
@@ -236,11 +284,11 @@ const CreateRecordPage: React.FC = () => {
         }
 
         .create-record-card {
-           background: rgba(15, 15, 25, 0.6);
+           background: var(--surface-color);
            backdrop-filter: blur(15px);
-           border: 1px solid rgba(255, 255, 255, 0.1);
+           border: 1px solid var(--border-color);
            border-radius: 0.75rem;
-           box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+           box-shadow: 0 4px 16px var(--shadow-color);
            overflow: hidden;
            animation: slideUp 0.4s ease-out;
            display: flex;
@@ -260,10 +308,10 @@ const CreateRecordPage: React.FC = () => {
         }
 
         .create-record-header {
-           background: rgba(20, 20, 30, 0.7);
+           background: var(--surface-color);
            backdrop-filter: blur(12px);
            padding: clamp(1.5rem, 3vw, 2rem);
-           border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+           border-bottom: 1px solid var(--border-color);
            flex-shrink: 0;
          }
 
@@ -276,14 +324,14 @@ const CreateRecordPage: React.FC = () => {
         .icon-wrapper {
            width: 48px;
            height: 48px;
-           background: rgba(37, 99, 235, 0.2);
-           border: 1px solid rgba(37, 99, 235, 0.3);
+           background: var(--primary-color);
+           border: 1px solid var(--border-color);
            border-radius: 12px;
            display: flex;
            align-items: center;
            justify-content: center;
            backdrop-filter: blur(10px);
-           color: #2563eb;
+           color: var(--primary-color);
          }
 
         .header-title {
@@ -291,13 +339,13 @@ const CreateRecordPage: React.FC = () => {
            font-weight: 700;
            margin: 0;
            line-height: 1.2;
-           color: #e2e8f0;
+           color: var(--text-color);
          }
 
         .header-subtitle {
           font-size: clamp(0.875rem, 2vw, 1rem);
           margin: 0.25rem 0 0 0;
-          color: rgba(255, 255, 255, 0.7);
+          color: var(--text-secondary-color);
         }
 
         .create-record-body {
@@ -311,17 +359,17 @@ const CreateRecordPage: React.FC = () => {
         }
 
         .create-record-body::-webkit-scrollbar-track {
-          background: rgba(255, 255, 255, 0.05);
+          background: var(--surface-color);
           border-radius: 4px;
         }
 
         .create-record-body::-webkit-scrollbar-thumb {
-           background: rgba(255, 255, 255, 0.2);
+           background: var(--border-color);
            border-radius: 4px;
          }
 
          .create-record-body::-webkit-scrollbar-thumb:hover {
-           background: rgba(255, 255, 255, 0.4);
+           background: var(--text-secondary-color);
          }
 
         .fields-grid {
@@ -339,7 +387,7 @@ const CreateRecordPage: React.FC = () => {
         .field-label {
            font-size: clamp(0.875rem, 1.5vw, 0.95rem);
            font-weight: 600;
-           color: #e2e8f0;
+           color: var(--text-color);
            display: flex;
            align-items: center;
            gap: 0.5rem;
@@ -360,10 +408,10 @@ const CreateRecordPage: React.FC = () => {
            width: 100%;
            padding: clamp(0.625rem, 2vw, 0.875rem);
            font-size: clamp(0.875rem, 1.5vw, 1rem);
-           background: rgba(25, 25, 35, 0.7);
-           border: 1px solid rgba(255, 255, 255, 0.1);
+           background: var(--surface-color);
+           border: 1px solid var(--border-color);
            border-radius: 0.25rem;
-           color: #e2e8f0;
+           color: var(--text-color);
            transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
            font-family: inherit;
            backdrop-filter: blur(10px);
@@ -371,30 +419,30 @@ const CreateRecordPage: React.FC = () => {
 
          .field-input:focus {
            outline: none;
-           background: rgba(30, 30, 40, 0.8);
-           border-color: #3b82f6;
-           box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+           background: var(--surface-color);
+           border-color: var(--primary-color);
+           box-shadow: 0 0 0 3px var(--primary-color);
          }
 
          .field-input.locked {
-           background: rgba(10, 10, 15, 0.3);
-           color: rgba(255, 255, 255, 0.5);
+           background: var(--bg-color);
+           color: var(--text-secondary-color);
            cursor: not-allowed;
-           border-color: rgba(255, 255, 255, 0.05);
+           border-color: var(--border-color);
          }
 
         .field-input::placeholder {
-          color: rgba(255, 255, 255, 0.4);
+          color: var(--text-secondary-color);
         }
 
         .create-record-footer {
            padding: clamp(1.25rem, 3vw, 1.75rem);
-           background: rgba(20, 20, 30, 0.95);
+           background: var(--surface-color);
            backdrop-filter: blur(25px);
            display: flex;
            gap: clamp(0.75rem, 2vw, 1rem);
            justify-content: flex-end;
-           border-top: 1px solid rgba(255, 255, 255, 0.1);
+           border-top: 1px solid var(--border-color);
            flex-shrink: 0;
          }
 
@@ -413,29 +461,29 @@ const CreateRecordPage: React.FC = () => {
         }
 
         .btn-cancel {
-           background: rgba(71, 85, 105, 0.3);
-           color: white;
-           border: 1px solid rgba(255, 255, 255, 0.1);
+           background: var(--text-secondary-color);
+           color: var(--text-color);
+           border: 1px solid var(--border-color);
          }
 
          .btn-cancel:hover {
-           background: rgba(71, 85, 105, 0.5);
-           border-color: rgba(255, 255, 255, 0.2);
+           background: var(--text-secondary-color);
+           border-color: var(--border-color);
            transform: translateY(-1px);
-           box-shadow: 0 4px 16px rgba(71, 85, 105, 0.3);
+           box-shadow: 0 4px 16px var(--shadow-color);
          }
 
         .btn-create {
-           background: rgba(34, 197, 94, 0.3);
-           color: white;
-           border: 1px solid rgba(34, 197, 94, 0.3);
-           box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+           background: var(--primary-color);
+           color: var(--text-color);
+           border: 1px solid var(--border-color);
+           box-shadow: 0 4px 12px var(--shadow-color);
          }
 
          .btn-create:hover {
-           background: rgba(34, 197, 94, 0.5);
+           background: var(--primary-color);
            transform: translateY(-2px);
-           box-shadow: 0 6px 20px rgba(34, 197, 94, 0.4);
+           box-shadow: 0 6px 20px var(--shadow-color);
          }
 
         .btn:active {

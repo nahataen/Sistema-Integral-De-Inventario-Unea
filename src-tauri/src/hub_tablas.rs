@@ -68,6 +68,16 @@ pub fn create_table(state: State<AppState>, db_name: String, table_name: String)
     let conn = rusqlite::Connection::open(&db_file)
         .map_err(|e| format!("Error al abrir la base de datos: {}", e))?;
 
+    // Check if table already exists
+    let query = "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name=?";
+    let mut stmt = conn.prepare(query)
+        .map_err(|e| format!("Error al preparar la consulta: {}", e))?;
+    let count: i64 = stmt.query_row([table_name.clone()], |row| row.get(0))
+        .map_err(|e| format!("Error al ejecutar la consulta: {}", e))?;
+    if count > 0 {
+        return Err(format!("La tabla '{}' ya existe. Por favor, utilice otro nombre.", table_name));
+    }
+
     // Create table with a basic structure: id as TEXT PRIMARY KEY
     let sql = format!("CREATE TABLE \"{}\" (id TEXT PRIMARY KEY)", table_name);
     conn.execute(&sql, [])

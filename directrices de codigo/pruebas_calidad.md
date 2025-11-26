@@ -1,0 +1,8 @@
+Pruebas y Aseguramiento de Calidad:
+Para garantizar la estabilidad y fiabilidad del Sistema de Almacén UNEA, se implementó un conjunto completo de pruebas automatizadas y manuales. Se utilizó Jest como framework principal para pruebas unitarias en el frontend, permitiendo validar componentes individuales y funciones utilitarias. Las pruebas cubren escenarios críticos como la manipulación de datos, validaciones de formularios y manejo de errores, asegurando que cada cambio no introduzca regresiones.
+
+Se incorporó Puppeteer para pruebas end-to-end, simulando interacciones reales del usuario como navegación entre páginas, operaciones CRUD y subida de archivos. Estas pruebas verifican el flujo completo de la aplicación, desde la importación de bases de datos hasta la exportación de resultados. La configuración de CI/CD con GitHub Actions ejecuta automáticamente estas pruebas en cada push, proporcionando feedback inmediato sobre la calidad del código.
+
+Además de las pruebas automatizadas, se realizaron sesiones de testing manual exhaustivo en múltiples plataformas (Windows y macOS). Se verificó la compatibilidad con diferentes versiones de sistemas operativos, tamaños de pantalla y configuraciones de hardware. Se implementaron validaciones de entrada para prevenir inyección SQL y otros ataques comunes, fortaleciendo la seguridad del sistema.
+
+El proceso de aseguramiento de calidad incluye revisiones de código peer-to-peer y documentación detallada de cada funcionalidad. Se mantiene un registro de bugs y mejoras continuas, permitiendo iteraciones rápidas basadas en feedback real. Esta aproximación integral asegura que el sistema no solo funcione correctamente, sino que también proporcione una experiencia confiable y segura para los usuarios finales.

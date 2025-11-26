@@ -1,0 +1,297 @@
+/* =================================================================
+   MODAL SYSTEM - Global Modal Styles
+   Unified, responsive modal system for the entire application
+   ================================================================= */
+
+/* --- Modal Overlay (Background) --- */
+.modal-overlay {
+    /* Fixed positioning to cover entire viewport */
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+
+    /* Reset any inherited positioning */
+    right: auto !important;
+    bottom: auto !important;
+    margin: 0 !important;
+    transform: none !important;
+    transform-origin: unset !important;
+
+    /* Semi-transparent dark background with blur */
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+
+    /* Flexbox for perfect centering */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    /* Ensure it's above all other content */
+    z-index: 999999 !important;
+
+    /* Allow scrolling if modal is taller than viewport */
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    /* Padding to prevent modal from touching edges */
+    padding: 1rem;
+
+    /* Smooth fade-in animation */
+    animation: modal-fade-in 0.2s ease-out;
+}
+
+/* --- Modal Container (The actual modal box) --- */
+.modal-container {
+    /* Flexbox for internal layout */
+    display: flex;
+    flex-direction: column;
+
+    /* Responsive width with max constraint */
+    width: 100%;
+    max-width: 500px;
+
+    /* Prevent overflow */
+    max-height: 90vh;
+
+    /* Styling */
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: 1rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+
+    /* Ensure modal doesn't overflow */
+    overflow: hidden;
+
+    /* Auto margins for centering when using flex parent */
+    margin: auto;
+
+    /* Position relative for z-index context */
+    position: relative;
+    z-index: 100000;
+
+    /* Scale-up animation */
+    animation: modal-scale-up 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* --- Modal Header --- */
+.modal-header {
+    /* Layout */
+    padding: 1.25rem 1.5rem;
+
+    /* Styling */
+    background: var(--surface-color);
+    border-bottom: 1px solid var(--border-color);
+
+    /* Typography */
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-color);
+
+    /* Flex for icon alignment */
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+
+    /* Prevent shrinking */
+    flex-shrink: 0;
+}
+
+/* --- Modal Body --- */
+.modal-body {
+    /* Layout */
+    padding: 1.5rem 2rem;
+
+    /* Allow scrolling if content is too tall */
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    /* Flexible height */
+    flex: 1;
+
+    /* Typography */
+    color: var(--text-color);
+}
+
+/* --- Modal Footer --- */
+.modal-footer {
+    /* Layout */
+    padding: 1.25rem 1.5rem;
+
+    /* Styling */
+    background: var(--surface-color);
+    border-top: 1px solid var(--border-color);
+
+    /* Flex for button layout */
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+
+    /* Prevent shrinking */
+    flex-shrink: 0;
+}
+
+/* --- Modal Animations --- */
+@keyframes modal-fade-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes modal-scale-up {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* =================================================================
+   RESPONSIVE DESIGN
+   ================================================================= */
+
+/* --- Tablets (max-width: 768px) --- */
+@media (max-width: 768px) {
+    .modal-overlay {
+        padding: 1rem;
+    }
+
+    .modal-container {
+        max-width: 95vw;
+        max-height: 85vh;
+    }
+
+    .modal-header {
+        padding: 1rem 1.25rem;
+        font-size: 1.125rem;
+    }
+
+    .modal-body {
+        padding: 1.25rem;
+    }
+
+    .modal-footer {
+        padding: 1rem 1.25rem;
+        flex-direction: column-reverse;
+        gap: 0.75rem;
+    }
+
+    /* Full-width buttons on tablets */
+    .modal-footer button {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* --- Mobile (max-width: 480px) --- */
+@media (max-width: 480px) {
+    .modal-overlay {
+        padding: 0.5rem;
+    }
+
+    .modal-container {
+        width: 100%;
+        max-width: 100%;
+        max-height: 90vh;
+        border-radius: 0.75rem;
+    }
+
+    .modal-header {
+        padding: 1rem;
+        font-size: 1rem;
+    }
+
+    .modal-body {
+        padding: 1rem;
+    }
+
+    .modal-footer {
+        padding: 1rem;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+}
+
+/* =================================================================
+   UTILITY CLASSES
+   ================================================================= */
+
+/* Center text in modal body */
+.modal-body-center {
+    text-align: center;
+}
+
+/* Add icon before modal header */
+.modal-header-icon::before {
+    content: "⚠️";
+    font-size: 1.5rem;
+}
+
+/* Message container within modal body */
+.modal-message {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--text-primary);
+    margin: 0;
+    word-wrap: break-word;
+    background: var(--bg-color);
+    border-radius: 0.5rem;
+    border: 1px solid var(--border-color);
+    padding: 1rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Highlight important text within modal */
+.modal-highlight {
+    color: var(--danger-color);
+    font-weight: 700;
+    background: rgba(239, 68, 68, 0.1);
+    padding: 0.125rem 0.25rem;
+    border-radius: 0.25rem;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+/* Form groups within modals */
+.modal-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.modal-form-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-secondary-color);
+}
+
+.modal-form-input,
+.modal-form-select {
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    background: var(--bg-color);
+    color: var(--text-color);
+    font-size: 1rem;
+    transition: all 0.2s ease;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.modal-form-input:focus,
+.modal-form-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}

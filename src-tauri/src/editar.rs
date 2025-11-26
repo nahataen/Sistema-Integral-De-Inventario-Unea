@@ -3,10 +3,11 @@ use rusqlite::types::Value;
 use tauri::State;
 use std::collections::HashMap;
 use serde_json;
+use base64::{Engine as _, engine::general_purpose};
 use crate::database_manager::AppState;
 
 // Convierte un valor JSON de Serde a un valor SQL de Rusqlite.
-fn convert_json_to_sql(json_value: &serde_json::Value) -> Result<Value, String> {
+fn convert_json_to_sql(json_value: &serde_json::Value, column_type: Option<&String>) -> Result<Value, String> {
     match json_value {
         serde_json::Value::Null => Ok(Value::Null),
         serde_json::Value::Bool(b) => Ok(Value::Integer(if *b { 1 } else { 0 })),
@@ -19,7 +20,17 @@ fn convert_json_to_sql(json_value: &serde_json::Value) -> Result<Value, String> 
                 Err("Número no soportado".to_string())
             }
         }
-        serde_json::Value::String(s) => Ok(Value::Text(s.clone())),
+        serde_json::Value::String(s) => {
+            // If it's a BLOB column and the string looks like base64, decode it
+            if column_type.as_ref().map_or(false, |t| *t == "BLOB") {
+                match general_purpose::STANDARD.decode(s) {
+                    Ok(bytes) => Ok(Value::Blob(bytes)),
+                    Err(_) => Ok(Value::Text(s.clone())), // Fallback to text if not valid base64
+                }
+            } else {
+                Ok(Value::Text(s.clone()))
+            }
+        },
         _ => Err(format!("Tipo de dato no soportado para conversión: {:?}", json_value)),
     }
 }
@@ -33,6 +44,7 @@ pub fn update_table_row(
     pk_column: String,
     pk_value: serde_json::Value,
     updates: HashMap<String, serde_json::Value>,
+    column_types: Option<HashMap<String, String>>,
 ) -> Result<bool, String> {
     if updates.is_empty() {
         return Err("No hay datos para actualizar.".to_string());
@@ -70,9 +82,10 @@ pub fn update_table_row(
     let mut params: Vec<Value> = Vec::new();
     for key in updates.keys() {
         let value = &updates[key];
-        params.push(convert_json_to_sql(value)?);
+        let col_type = column_types.as_ref().and_then(|ct| ct.get(key));
+        params.push(convert_json_to_sql(value, col_type)?);
     }
-    params.push(convert_json_to_sql(&pk_value)?);
+    params.push(convert_json_to_sql(&pk_value, None)?);
 
     let params_refs: Vec<&dyn ToSql> = params.iter().map(|v| v as &dyn ToSql).collect();
 
@@ -118,7 +131,7 @@ pub fn delete_table_row(
     );
 
     // Convierte el valor de la clave primaria a un valor SQL.
-    let pk_sql_value = convert_json_to_sql(&pk_value)?;
+    let pk_sql_value = convert_json_to_sql(&pk_value, None)?;
 
     println!("DELETE SQL: {}, PK column: {}, PK value: {} (type: {})", sql, pk_column, pk_value, pk_value);
 
@@ -150,6 +163,7 @@ pub fn crear_registro_con_auto_incremento_no(
     db_name: String,
     table_name: String,
     data: HashMap<String, serde_json::Value>,
+    column_types: Option<HashMap<String, String>>,
 ) -> Result<bool, String> {
     // Determina la ruta del archivo de la base de datos.
     let db_path = state.db_dir.join(format!("{}.db", db_name));
@@ -220,7 +234,8 @@ pub fn crear_registro_con_auto_incremento_no(
     let mut params: Vec<Value> = Vec::new();
     for key in data_with_no.keys() {
         let value = &data_with_no[key];
-        params.push(convert_json_to_sql(value)?);
+        let col_type = column_types.as_ref().and_then(|ct| ct.get(key));
+        params.push(convert_json_to_sql(value, col_type)?);
     }
 
     let params_refs: Vec<&dyn ToSql> = params.iter().map(|v| v as &dyn ToSql).collect();

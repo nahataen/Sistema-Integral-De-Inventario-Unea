@@ -2,3 +2,4 @@
 // Add your context providers here as the project grows
 
 export { TableCreationProvider, useTableCreation } from './TableCreationContext';
+export { ThemeProvider, useTheme } from './ThemeContext';

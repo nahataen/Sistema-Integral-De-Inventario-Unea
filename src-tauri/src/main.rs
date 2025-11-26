@@ -11,6 +11,11 @@ mod importar_tabla; // NUEVO: Declara el módulo de importación.
 mod crear_registro; // <--- NUEVO
 mod ingresar_img_thumbnails;
 mod eliminar_columna;
+mod validar_tabla;
+mod validar_columna;
+mod subir_imagen;
+mod detalle_registro;
+mod obtener_info_columnas;
 use tauri::Builder;
 
 use database_manager::{
@@ -26,6 +31,11 @@ use hub_tablas::{ create_table, list_tables, delete_table, upload_table_image, d
 
 use consulta_tablas::consulta_tabla;
 use editar::execute_sql;
+use validar_tabla::check_table_exists;
+use validar_columna::check_column_exists;
+use subir_imagen::upload_image_for_record;
+use detalle_registro::get_record_details;
+use obtener_info_columnas::get_column_info;
 use dirs;
 
 fn main() {
@@ -60,6 +70,11 @@ fn main() {
                 importar_tabla::import_table_from_json_with_options,
                 ingresar_img_thumbnails::add_new_column,
                 eliminar_columna::delete_column,
+                check_table_exists,
+                check_column_exists,
+                upload_image_for_record,
+                get_record_details,
+                get_column_info,
             ]
         )
         .run(tauri::generate_context!())

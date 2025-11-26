@@ -1,6 +1,7 @@
 use rusqlite::{Connection, ToSql};
 use serde::Deserialize;
 use tauri::State;
+use base64::{Engine as _, engine::general_purpose};
 use crate::database_manager::AppState;
 
 #[derive(Debug, Deserialize)]
@@ -77,18 +78,21 @@ pub fn crear_registro_con_auto_incremento(
     data_with_id.insert(registro.id_column.clone(), serde_json::Value::Number(serde_json::Number::from(final_id)));
 
     // ==============================
-    // 4. Obtener columnas reales
+    // 4. Obtener columnas reales con tipos
     // ==============================
     let mut stmt = conn.prepare(&format!("PRAGMA table_info(\"{}\")", registro.table_name))
         .map_err(|e| format!("Error PRAGMA: {}", e))?;
 
-    let columns: Vec<String> = stmt.query_map([], |row| {
+    let columns_info: Vec<(String, String)> = stmt.query_map([], |row| {
         let name: String = row.get(1)?;
-        Ok(name)
+        let type_: String = row.get(2)?;
+        Ok((name, type_))
     })
     .map_err(|e| format!("Error recorriendo columnas: {}", e))?
     .collect::<Result<Vec<_>, _>>()
     .map_err(|e| format!("Error columnas: {}", e))?;
+
+    let columns: Vec<String> = columns_info.iter().map(|(name, _)| name.clone()).collect();
 
     // ==============================
     // 5. Crear SQL dinámico
@@ -115,13 +119,27 @@ pub fn crear_registro_con_auto_incremento(
     // ==============================
     let mut params: Vec<Box<dyn ToSql>> = Vec::new();
 
-    for col in columns.iter() {
+    for (i, col) in columns.iter().enumerate() {
+        let col_type = &columns_info[i].1;
         if let Some(v) = data_with_id.get(col) {
             if col == &registro.id_column {
                 // Always treat ID as text, as the auto-increment query uses CAST.
                 match v {
                     serde_json::Value::Number(n) => params.push(Box::new(n.to_string())),
                     _ => params.push(Box::new(v.to_string())), // Fallback for safety
+                }
+            } else if col_type == "BLOB" {
+                // Handle BLOB columns (images)
+                match v {
+                    serde_json::Value::String(s) => {
+                        // Try to decode base64 string to bytes
+                        match general_purpose::STANDARD.decode(s) {
+                            Ok(bytes) => params.push(Box::new(bytes)),
+                            Err(_) => params.push(Box::new(s.clone())), // Fallback to string if not valid base64
+                        }
+                    }
+                    serde_json::Value::Null => params.push(Box::new(rusqlite::types::Null)),
+                    _ => params.push(Box::new(v.to_string())), // Fallback
                 }
             } else if col == "zona_campus" {
                 // Keep original logic for zona_campus

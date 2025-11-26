@@ -1,0 +1,8 @@
+Despliegue y Distribución:
+El proceso de despliegue del Sistema de Almacén UNEA fue diseñado para ser eficiente y multiplataforma desde el inicio. Se configuró GitHub Actions para automatizar la construcción y empaquetado de la aplicación, generando instaladores nativos para Windows y macOS. Cada commit al repositorio principal dispara el pipeline de CI/CD, que compila el código Rust, empaqueta los assets del frontend y crea archivos ejecutables listos para distribución.
+
+La distribución se realiza a través de releases en GitHub, donde se publican versiones estables con notas de cambios detalladas. Los usuarios pueden descargar instaladores específicos para su sistema operativo, eliminando la necesidad de configuraciones complejas. Se implementó un sistema de versionado semántico que facilita el seguimiento de actualizaciones y compatibilidad.
+
+Para entornos de desarrollo, se proporcionó configuración Docker que permite replicar el ambiente exacto en cualquier máquina. Esto asegura consistencia entre desarrolladores y facilita la incorporación de nuevos miembros al equipo. La imagen Docker incluye todas las dependencias necesarias, desde Node.js y Rust hasta las herramientas de testing.
+
+Se consideró la distribución interna dentro de la institución UNEA, implementando medidas de seguridad como firmas digitales en los instaladores para Windows y notariación para macOS. Esto garantiza la integridad de los archivos descargados y cumple con las políticas de seguridad de la universidad. El proceso de actualización se diseñó para ser transparente, permitiendo a los usuarios actualizar la aplicación sin perder datos o configuraciones personalizadas.

@@ -18,7 +18,7 @@ const Pagina = () => {
     setSelectedRowId(newSelectedId);
   };
 
-  const handleSaveRow = async (pk: { name: string, value: any }, updatedData: Record<string, any>): Promise<boolean> => {
+  const handleSaveRow = async (pk: { name: string, value: any }, updatedData: Record<string, any>, columnTypes?: Record<string, string>): Promise<boolean> => {
     try {
       if (!dbName || !tableName) throw new Error('Nombre de base de datos o tabla no especificado.');
       if (!pk || pk.name === undefined || pk.value === undefined) throw new Error('Clave primaria inválida.');
@@ -29,6 +29,7 @@ const Pagina = () => {
         pkColumn: pk.name,
         pkValue: pk.value,
         updates: updatedData,
+        columnTypes,
       });
 
       return result === true;
@@ -78,6 +79,7 @@ const Pagina = () => {
             <h1 className="pagina-titulo">
               {tableName ? `Tabla: ${tableName}` : 'Sin tabla seleccionada'}
             </h1>
+
 
             <div className="pagina-header-space"></div>
           </div>

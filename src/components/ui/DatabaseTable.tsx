@@ -2,6 +2,7 @@ import { invoke } from '@tauri-apps/api/tauri';
 import { save } from '@tauri-apps/api/dialog';
 import { dirname } from '@tauri-apps/api/path';
 import { useState, useCallback, memo } from 'react';
+import { createPortal } from 'react-dom';
 import type { Database } from "../../types";
 import { useNavigate } from "react-router-dom";
 import styles from "./DatabaseTable.module.css";
@@ -143,27 +144,35 @@ const DatabaseTable = memo(({ databases, onRefresh }: DatabaseTableProps) => {
         </div>
       </div>
 
-      {showDeleteDialog && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.modalContent}>
-            <h3 className={styles.modalTitle}>Confirmar eliminación</h3>
-            <p className={styles.modalText}>¿Estás seguro de eliminar "{deleteCandidate}"?</p>
-            <div className={styles.modalButtons}>
+      {showDeleteDialog && createPortal(
+        <div className="modal-overlay">
+          <div className="modal-container">
+            <div className="modal-header">
+              <h3>Confirmar Eliminación de Base de Datos</h3>
+            </div>
+            <div className="modal-body">
+              <div className="modal-message">
+                ¿Estás seguro de eliminar la base de datos <strong>"{deleteCandidate}"</strong>? Esta acción no se puede deshacer.
+              </div>
+            </div>
+            <div className="modal-footer">
               <button
+                className="glass-button"
                 onClick={confirmDelete}
-                className={styles.confirmButton}
+                style={{
+                  background: 'var(--danger-color)',
+                  color: 'white'
+                }}
               >
                 Eliminar
               </button>
-              <button
-                onClick={() => setShowDeleteDialog(false)}
-                className={styles.cancelButton}
-              >
+              <button className="glass-button" onClick={() => setShowDeleteDialog(false)}>
                 Cancelar
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );

@@ -42,39 +42,33 @@ const TableCard: React.FC<TableCardProps> = ({
   return (
     <div
       // Contenedor principal de la tarjeta con estilo glassmorphism
+      className="glass-card"
       style={{
-        background: 'rgba(15, 15, 25, 0.6)',
         borderRadius: '0.75rem',
         overflow: 'hidden',
         transform: 'translateY(0)',
         transition: 'all 0.2s ease',
-        border: '1px solid rgba(255, 255, 255, 0.1)',
-        cursor: 'pointer',
-        backdropFilter: 'blur(15px)',
-        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)'
+        cursor: 'pointer'
       }}
       onClick={() => onEdit(table.name)}
       onMouseEnter={(e) => {
         e.currentTarget.style.transform = 'translateY(-4px)';
-        e.currentTarget.style.boxShadow = '0 12px 40px rgba(0, 0, 0, 0.6)';
       }}
       onMouseLeave={(e) => {
         e.currentTarget.style.transform = 'translateY(0)';
-        e.currentTarget.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.4)';
       }}
     >
       {/* Área para mostrar la imagen o un placeholder */}
       <div style={{
         width: '100%',
         height: '160px',
-        background: 'rgba(20, 20, 30, 0.5)',
+        background: 'var(--secondary-color)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        color: '#94a3b8',
+        color: 'var(--text-secondary-color)',
         position: 'relative',
-        overflow: 'hidden',
-        backdropFilter: 'blur(10px)'
+        overflow: 'hidden'
       }}>
         {table.image_path && !imageLoadError ? (
           <img
@@ -119,9 +113,8 @@ const TableCard: React.FC<TableCardProps> = ({
         <h3 style={{
           fontSize: '18px',
           fontWeight: '700',
-          color: '#f1f5f9',
+          color: 'var(--text-color)',
           marginBottom: '12px',
-          textShadow: '0 2px 10px rgba(0, 0, 0, 0.8)',
           whiteSpace: 'nowrap',
           overflow: 'hidden',
           textOverflow: 'ellipsis',
@@ -137,33 +130,30 @@ const TableCard: React.FC<TableCardProps> = ({
             onUploadImage(table.name);
           }}
           disabled={uploadingImage === table.name}
+          className="glass-button"
           style={{
             width: '100%',
             marginBottom: '12px',
             padding: '8px 12px',
-            background: uploadingImage === table.name ? 'rgba(71, 85, 105, 0.5)' : 'rgba(37, 99, 235, 0.3)',
-            color: '#ffffff',
+            background: uploadingImage === table.name ? 'var(--text-secondary-color)' : 'var(--primary-color)',
+            color: uploadingImage === table.name ? 'var(--text-color)' : 'white',
             fontSize: '14px',
             fontWeight: '600',
             borderRadius: '8px',
-            border: '1px solid rgba(37, 99, 235, 0.4)',
             cursor: uploadingImage === table.name ? 'not-allowed' : 'pointer',
             transition: 'all 0.2s ease',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: '8px',
-            backdropFilter: 'blur(10px)'
+            gap: '8px'
           }}
           onMouseEnter={(e) => {
             if (uploadingImage !== table.name) {
-              e.currentTarget.style.background = 'rgba(37, 99, 235, 0.4)';
               e.currentTarget.style.transform = 'translateY(-1px)';
             }
           }}
           onMouseLeave={(e) => {
             if (uploadingImage !== table.name) {
-              e.currentTarget.style.background = 'rgba(37, 99, 235, 0.3)';
               e.currentTarget.style.transform = 'translateY(0)';
             }
           }}
@@ -229,21 +219,18 @@ const TableCard: React.FC<TableCardProps> = ({
             }}
             style={{
               flex: 1,
-              color: '#60a5fa',
+              color: 'var(--primary-color)',
               background: 'none',
               border: 'none',
               cursor: 'pointer',
               transition: 'all 0.2s ease',
-              textDecoration: 'underline',
-              textDecorationColor: 'rgba(96, 165, 250, 0.5)'
+              textDecoration: 'underline'
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.color = '#93c5fd';
-              e.currentTarget.style.textDecorationColor = 'rgba(147, 197, 253, 0.8)';
+              e.currentTarget.style.color = 'var(--accent-color)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.color = '#60a5fa';
-              e.currentTarget.style.textDecorationColor = 'rgba(96, 165, 250, 0.5)';
+              e.currentTarget.style.color = 'var(--primary-color)';
             }}
           >
             Editar
@@ -255,21 +242,18 @@ const TableCard: React.FC<TableCardProps> = ({
             }}
             style={{
               flex: 1,
-              color: '#10b981',
+              color: 'var(--success-color)',
               background: 'none',
               border: 'none',
               cursor: 'pointer',
               transition: 'all 0.2s ease',
-              textDecoration: 'underline',
-              textDecorationColor: 'rgba(16, 185, 129, 0.5)'
+              textDecoration: 'underline'
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.color = '#34d399';
-              e.currentTarget.style.textDecorationColor = 'rgba(52, 211, 153, 0.8)';
+              e.currentTarget.style.color = 'var(--success-hover)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.color = '#10b981';
-              e.currentTarget.style.textDecorationColor = 'rgba(16, 185, 129, 0.5)';
+              e.currentTarget.style.color = 'var(--success-color)';
             }}
           >
             Exportar
@@ -281,21 +265,18 @@ const TableCard: React.FC<TableCardProps> = ({
             }}
             style={{
               flex: 1,
-              color: '#f87171',
+              color: 'var(--danger-color)',
               background: 'none',
               border: 'none',
               cursor: 'pointer',
               transition: 'all 0.2s ease',
-              textDecoration: 'underline',
-              textDecorationColor: 'rgba(248, 113, 113, 0.5)'
+              textDecoration: 'underline'
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.color = '#fca5a5';
-              e.currentTarget.style.textDecorationColor = 'rgba(252, 165, 165, 0.8)';
+              e.currentTarget.style.color = 'var(--danger-hover)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.color = '#f87171';
-              e.currentTarget.style.textDecorationColor = 'rgba(248, 113, 113, 0.5)';
+              e.currentTarget.style.color = 'var(--danger-color)';
             }}
           >
             Borrar

@@ -3,8 +3,8 @@
 ========================= */
 .pagina {
   min-height: 100vh;
-  background: rgba(5, 5, 10, 0.9);
-  color: #f3f4f6;
+  background: var(--bg-color);
+  color: var(--text-color);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -19,28 +19,28 @@
   width: 100%;
   max-width: 1200px;
   margin: 2rem auto;
-  background: rgba(10, 10, 15, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--surface-color);
+  border: 1px solid var(--border-color);
   border-radius: 1rem;
   padding: 2rem;
   box-sizing: border-box;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7);
+  box-shadow: 0 12px 40px var(--shadow-color);
 }
 
 /* =========================
-   🧭 Encabezado
+    🧭 Encabezado
 ========================= */
 .pagina-header {
-  background: rgba(15, 15, 25, 0.7);
+  background: var(--surface-color);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--border-color);
   width: 100%;
   max-width: 1200px;
   border-radius: 0 0 1rem 1rem;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 8px 32px var(--shadow-color);
 }
 
 .pagina-header-content {
@@ -65,10 +65,10 @@
   gap: 0.5rem;
   padding: 0.75rem 1rem;
   border-radius: 0.75rem;
-  background: rgba(25, 25, 35, 0.6);
-  color: #d1d5db;
+  background: var(--surface-color);
+  color: var(--text-secondary-color);
   cursor: pointer;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-color);
   transition: all 0.2s ease;
   white-space: nowrap;
   box-sizing: border-box;
@@ -76,16 +76,16 @@
 }
 
 .btn-volver:hover {
-  color: #fff;
-  background: rgba(35, 35, 45, 0.8);
+  color: var(--text-color);
+  background: var(--secondary-color);
   transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 16px var(--shadow-color);
 }
 
 .btn-volver:focus {
   outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px var(--primary-color);
 }
 
 .btn-text {
@@ -103,14 +103,14 @@
 .pagina-titulo {
   font-size: clamp(1.25rem, 2vw, 2rem);
   font-weight: 700;
-  color: white;
+  color: var(--text-color);
   text-align: center;
   flex: 1;
   min-width: 200px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+  text-shadow: 0 2px 10px var(--shadow-color);
 }
 
 /* =========================
@@ -132,17 +132,17 @@
   transform: translateY(-50%);
   width: 1.25rem;
   height: 1.25rem;
-  color: #9ca3af;
+  color: var(--text-secondary-color);
   pointer-events: none;
 }
 
 .search-input {
   width: 100%;
   padding: 1rem 1rem 1rem 3rem;
-  background: rgba(20, 20, 30, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--surface-color);
+  border: 1px solid var(--border-color);
   border-radius: 0.75rem;
-  color: white;
+  color: var(--text-color);
   font-size: 1rem;
   transition: all 0.2s ease;
   box-sizing: border-box;
@@ -150,13 +150,13 @@
 }
 
 .search-input:hover {
-  border-color: rgba(75, 85, 99, 0.5);
+  border-color: var(--text-secondary-color);
 }
 
 .search-input:focus {
   outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 4px var(--primary-color);
 }
 
 /* =========================
@@ -167,11 +167,11 @@
   align-items: center;
   gap: 0.5rem;
   padding: 1rem 1.5rem;
-  background: rgba(37, 99, 235, 0.3);
-  color: white;
+  background: var(--primary-color);
+  color: var(--text-color);
   font-weight: 600;
   border-radius: 0.75rem;
-  border: 1px solid rgba(37, 99, 235, 0.4);
+  border: 1px solid var(--border-color);
   cursor: pointer;
   transition: all 0.2s ease;
   box-sizing: border-box;
@@ -179,15 +179,15 @@
 }
 
 .btn-inicio:hover {
-  background: rgba(37, 99, 235, 0.4);
+  background: var(--primary-color);
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 6px 20px var(--shadow-color);
 }
 
 .btn-inicio:focus {
   outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.3);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 4px var(--primary-color);
 }
 
 .btn-inicio:active {
@@ -223,6 +223,11 @@
     width: 100%;
     justify-content: center;
   }
+}
+
+/* Light mode button text colors */
+[data-theme="light"] .btn-inicio {
+  color: white;
 }
 
 @media (max-width: 480px) {

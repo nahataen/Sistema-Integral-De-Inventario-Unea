@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { invoke } from '@tauri-apps/api/tauri';
 import toast from 'react-hot-toast';
 import { useTableCreation } from '../../context';
@@ -31,45 +32,38 @@ const CreateTableModal: React.FC<CreateTableModalProps> = ({ dbName, onRefresh }
 
   if (!isModalOpen) return null;
 
-  return (
-    <div className={styles.modalOverlay}>
-      <div className={styles.modal}>
-        <h3>Crear Nueva Tabla</h3>
+  return createPortal(
+    <div className="modal-overlay">
+      <div className="modal-container">
+        <div className="modal-header">
+          <h3>Crear Nueva Tabla</h3>
+        </div>
         <form onSubmit={handleSubmit}>
-          <div style={{ margin: '1rem 0' }}>
-            <label style={{ display: 'block', marginBottom: '0.5rem', color: '#f1f5f9' }}>
-              Nombre de la tabla:
-            </label>
-            <input
-              type="text"
-              value={tableName}
-              onChange={(e) => setTableName(e.target.value)}
-              placeholder="Ingrese el nombre de la tabla..."
-              style={{
-                width: '100%',
-                padding: '0.5rem',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-                borderRadius: '8px',
-                background: 'rgba(15, 15, 25, 0.8)',
-                color: '#f1f5f9',
-                fontSize: '14px'
-              }}
-              autoFocus
-            />
+          <div className="modal-body">
+            <div className="modal-form-group">
+              <label className="modal-form-label">
+                Nombre de la tabla:
+              </label>
+              <input
+                type="text"
+                value={tableName}
+                onChange={(e) => setTableName(e.target.value)}
+                placeholder="Ingrese el nombre de la tabla..."
+                className="modal-form-input"
+                autoFocus
+              />
+            </div>
           </div>
-          <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+          <div className="modal-footer">
             <button
               type="submit"
               disabled={!tableName.trim()}
+              className="glass-button"
               style={{
-                padding: '0.5rem 1rem',
-                background: 'rgba(37, 99, 235, 0.3)',
-                color: '#ffffff',
-                border: '1px solid rgba(37, 99, 235, 0.4)',
-                borderRadius: '8px',
+                background: 'var(--primary-color)',
+                color: 'white',
                 cursor: tableName.trim() ? 'pointer' : 'not-allowed',
-                fontSize: '14px',
-                fontWeight: '600'
+                opacity: tableName.trim() ? 1 : 0.6
               }}
             >
               Crear Tabla
@@ -77,23 +71,15 @@ const CreateTableModal: React.FC<CreateTableModalProps> = ({ dbName, onRefresh }
             <button
               type="button"
               onClick={closeModal}
-              style={{
-                padding: '0.5rem 1rem',
-                background: 'rgba(107, 114, 128, 0.3)',
-                color: '#ffffff',
-                border: '1px solid rgba(107, 114, 128, 0.4)',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: '600'
-              }}
+              className="glass-button"
             >
               Cancelar
             </button>
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

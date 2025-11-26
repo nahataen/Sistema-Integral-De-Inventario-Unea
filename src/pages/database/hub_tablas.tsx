@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { createPortal } from 'react-dom';
 import { useNavigate, useLocation } from "react-router-dom";
 import { invoke } from "@tauri-apps/api/tauri";
 import { open, save } from "@tauri-apps/api/dialog";
@@ -234,24 +235,16 @@ const InventarioDashboardContent = () => {
 
           <button
             onClick={openModal}
-            className={styles.createButton}
+            className="glass-button"
             style={{
               padding: '8px 16px',
-              background: 'rgba(34, 197, 94, 0.3)',
-              color: '#ffffff',
-              border: '1px solid rgba(34, 197, 94, 0.4)',
+              background: 'var(--primary-color)',
+              color: 'white',
               borderRadius: '8px',
               cursor: 'pointer',
               fontSize: '14px',
               fontWeight: '600',
-              transition: 'all 0.2s ease',
-              backdropFilter: 'blur(10px)'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(34, 197, 94, 0.4)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(34, 197, 94, 0.3)';
+              transition: 'all 0.2s ease'
             }}
           >
             Crear Tabla
@@ -259,24 +252,16 @@ const InventarioDashboardContent = () => {
 
           <button
             onClick={handleImportTable}
-            className={styles.importButton}
+            className="glass-button"
             style={{
               padding: '8px 16px',
-              background: 'rgba(37, 99, 235, 0.3)',
-              color: '#ffffff',
-              border: '1px solid rgba(37, 99, 235, 0.4)',
+              background: 'var(--primary-color)',
+              color: 'white',
               borderRadius: '8px',
               cursor: 'pointer',
               fontSize: '14px',
               fontWeight: '600',
-              transition: 'all 0.2s ease',
-              backdropFilter: 'blur(10px)'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(37, 99, 235, 0.4)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(37, 99, 235, 0.3)';
+              transition: 'all 0.2s ease'
             }}
           >
             Importar Tabla
@@ -341,112 +326,102 @@ const InventarioDashboardContent = () => {
         </div>
       </main>
 
-      {showDeleteDialog && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.modal}>
-            <h3>Confirmar eliminación</h3>
-            <p>¿Estás seguro de eliminar "{deleteCandidate}"?</p>
-            <div className={styles.modalButtons}>
-              <button onClick={confirmDelete} className={styles.btnDelete}>
+      {showDeleteDialog && createPortal(
+        <div className="modal-overlay">
+          <div className="modal-container">
+            <div className="modal-header">
+              <h3>Confirmar Eliminación de Tabla</h3>
+            </div>
+            <div className="modal-body">
+              <div className="modal-message">
+                ¿Estás seguro de eliminar la tabla <strong>"{deleteCandidate}"</strong>? Esta acción no se puede deshacer.
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button
+                className="glass-button"
+                onClick={confirmDelete}
+                style={{
+                  background: 'var(--danger-color)',
+                  color: 'white'
+                }}
+              >
                 Eliminar
               </button>
-              <button
-                onClick={() => setShowDeleteDialog(false)}
-                className={styles.btnCancel}
-              >
+              <button className="glass-button" onClick={() => setShowDeleteDialog(false)}>
                 Cancelar
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Import Modal */}
-      {showImportDialog && importData && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.modal}>
-            <h3>⚠ Tabla existente</h3>
-            <p>
-              La tabla <strong>'{importData.originalTableName}'</strong> ya existe en{' '}
-              <strong>'{dbName}'</strong>.
-            </p>
-
-            <div style={{ margin: '1rem 0' }}>
-              <label style={{ display: 'block', marginBottom: '0.5rem', color: '#f1f5f9' }}>
-                Renombrar tabla:
-              </label>
-              <input
-                type="text"
-                value={newTableName}
-                onChange={(e) => setNewTableName(e.target.value)}
-                placeholder="Nuevo nombre..."
-                style={{
-                  width: '100%',
-                  padding: '0.5rem',
-                  border: '1px solid rgba(255, 255, 255, 0.2)',
-                  borderRadius: '8px',
-                  background: 'rgba(15, 15, 25, 0.8)',
-                  color: '#f1f5f9',
-                  fontSize: '14px'
-                }}
-              />
+      {showImportDialog && importData && createPortal(
+        <div className="modal-overlay">
+          <div className="modal-container">
+            <div className="modal-header">
+              <h3>⚠ Tabla existente</h3>
             </div>
+            <div className="modal-body">
+              <div className="modal-message">
+                La tabla <strong>'{importData.originalTableName}'</strong> ya existe en{' '}
+                <strong>'{dbName}'</strong>.
+              </div>
 
-            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-              <button
-                onClick={() => handleImportConfirm('rename')}
-                disabled={!newTableName.trim()}
-                style={{
-                  padding: '0.5rem 1rem',
-                  background: 'rgba(37, 99, 235, 0.3)',
-                  color: '#ffffff',
-                  border: '1px solid rgba(37, 99, 235, 0.4)',
-                  borderRadius: '8px',
-                  cursor: newTableName.trim() ? 'pointer' : 'not-allowed',
-                  fontSize: '14px',
-                  fontWeight: '600'
-                }}
-              >
-                ✏️ Renombrar
-              </button>
+              <div className="modal-form-group">
+                <label className="modal-form-label">
+                  Renombrar tabla:
+                </label>
+                <input
+                  type="text"
+                  value={newTableName}
+                  onChange={(e) => setNewTableName(e.target.value)}
+                  placeholder="Nuevo nombre..."
+                  className="modal-form-input"
+                />
+              </div>
+            </div>
+            <div className="modal-footer">
               <button
                 onClick={() => handleImportConfirm('overwrite')}
+                className="glass-button"
                 style={{
-                  padding: '0.5rem 1rem',
-                  background: 'rgba(239, 68, 68, 0.3)',
-                  color: '#ffffff',
-                  border: '1px solid rgba(239, 68, 68, 0.4)',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  fontSize: '14px',
-                  fontWeight: '600'
+                  background: 'var(--danger-color)',
+                  color: 'white'
                 }}
               >
                 🔄 Reemplazar
               </button>
               <button
-                onClick={() => handleImportConfirm('cancel')}
+                onClick={() => handleImportConfirm('rename')}
+                disabled={!newTableName.trim()}
+                className="glass-button"
                 style={{
-                  padding: '0.5rem 1rem',
-                  background: 'rgba(107, 114, 128, 0.3)',
-                  color: '#ffffff',
-                  border: '1px solid rgba(107, 114, 128, 0.4)',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  fontSize: '14px',
-                  fontWeight: '600'
+                  background: 'var(--primary-color)',
+                  color: 'white',
+                  cursor: newTableName.trim() ? 'pointer' : 'not-allowed',
+                  opacity: newTableName.trim() ? 1 : 0.6
                 }}
+              >
+                ✏️ Renombrar
+              </button>
+              <button
+                onClick={() => handleImportConfirm('cancel')}
+                className="glass-button"
               >
                 ❌ Cancelar
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       <CreateTableModal dbName={dbName} onRefresh={() => setRefreshKey((prev) => prev + 1)} />
 
-      <Toaster position="bottom-right" />
+      <Toaster position="bottom-center" />
     </div>
   );
 };

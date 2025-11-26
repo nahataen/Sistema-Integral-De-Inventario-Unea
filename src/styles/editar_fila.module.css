@@ -1,12 +1,12 @@
 .container {
   min-height: 100vh;
-  background: rgba(5, 5, 10, 0.9);
+  background: var(--bg-color);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
 }
 
 .header {
-  background: rgba(5, 5, 10, 0.8);
+  background: var(--surface-color);
   backdrop-filter: blur(15px);
   -webkit-backdrop-filter: blur(15px);
 }
@@ -40,10 +40,10 @@
 .backButton {
   display: flex;
   align-items: center;
-  color: #b0b0b0;
+  color: var(--text-secondary-color);
   transition: all 0.2s ease;
-  background: rgba(5, 5, 10, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--surface-color);
+  border: 1px solid var(--border-color);
   border-radius: 0.5rem;
   padding: 0.5rem 1rem;
   backdrop-filter: blur(10px);
@@ -51,10 +51,10 @@
 }
 
 .backButton:hover {
-  color: #ffffff;
-  background: rgba(5, 5, 10, 0.8);
+  color: var(--text-color);
+  background: var(--secondary-color);
   transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 16px var(--shadow-color);
 }
 
 .backIcon {
@@ -71,8 +71,8 @@
 .title {
   font-size: 1.875rem;
   font-weight: 700;
-  color: #ffffff;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+  color: var(--text-color);
+  text-shadow: 0 2px 10px var(--shadow-color);
 }
 
 .spacer {
@@ -100,13 +100,13 @@
 }
 
 .contentBox {
-  background: rgba(5, 5, 10, 0.7);
+  background: var(--surface-color);
   border-radius: 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-color);
   padding: 2rem;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 8px 32px var(--shadow-color);
 }
 
 .centerText {
@@ -116,11 +116,11 @@
 .subtitle {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--text-color);
   margin-bottom: 1rem;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+  text-shadow: 0 2px 10px var(--shadow-color);
 }
 
 .infoText {
-  color: #b0b0b0;
+  color: var(--text-secondary-color);
 }

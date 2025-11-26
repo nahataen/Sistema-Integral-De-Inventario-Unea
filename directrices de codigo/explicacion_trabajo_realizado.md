@@ -1,0 +1,27 @@
+Editar registros:
+Fue desarrollado un apartado nuevo para la edición de las tablas y sus registros. Estaba pensado para que se tuviera un manejo más fino sobre la información que se guarda. Las filas concretas de una tabla son seleccionadas y luego modificadas desde una pantalla bastante clara. No se requiere la ejecución manual de comandos técnicos. La modificación es llevada a cabo de forma controlada. Se busca que los cambios sean aplicados solo al dato elegido. De esta manera, se previene que otros datos sean alterados por accidente.
+Fueron añadidas también unas funciones de revisión y confirmación. Con ellas se comprueba que los valores tengan sentido antes de ser guardados en la base de datos. Esta utilidad es muy práctica cuando se necesitan hacer correcciones rápidas o ajustes menores. Es buena para las pruebas de mantenimiento, porque es una forma de hacer el trabajo más directo y se reduce la posibilidad de cometer errores. Con esto, la administración general de los registros dentro del sistema queda más sólida.
+
+Filtrar y buscar:
+Se ha creado una herramienta de filtrado para que la información se halle mucho más rápido en las listas de la base de datos, esto evita la revisión manual de grandes pilas de datos. Las personas que lo usan pueden poner filtros específicos o buscar con palabras que eligen, y eso significa que el trabajo de buscar se hace mucho menos tedioso. Este sistema se pensó para que sea fácil de entender, mostrando los resultados de manera rápida y muy organizada. Esto permite que las decisiones se tomen de forma sencilla. En conjunto, el sistema es más simple de usar, dando herramientas que hacen que la labor rinda y que se requiera menos tiempo para ubicar cosas puntuales dentro de las listas.
+
+Mejoras del panel principal:
+El panel principal lo hemos cambiado por completo. La idea era simple: que desarrollar sea mucho más fácil y, de paso, se vea elegante.
+Se implementó un nuevo modo oscuro. No es solo por moda; de verdad, es un alivio para la vista. Cuando pasas horas frente a la pantalla, esto es una mejor opción porque reduce un montón el cansancio de la vista. Además, todo se ve más moderno gracias a ese efecto tipo "glassmorphism" que le da un toque de profundidad.
+Gestionar las bases de datos ahora es mucho más sencillo y confiable, porque podemos ver de golpe datos clave como cuándo se modificó la última vez y cuánto ocupa cada una. Esto te simplifica un mucho el control de lo que tienes y el mantenimiento.
+Cuando importas datos, ahora hay un filtro automático que revisa si hay errores. Es un detalle esencial porque escanea la base de datos antes de cargarla, evitando cualquier fallo o formato raro. Así el usuario se asegura de que la información que se sube al proyecto está limpia. Además, se agregó un pequeño detalle útil: siempre te está indicando cuál es la base de datos que estás usando en ese momento.
+
+Hub de tablas:
+Se mejoró la forma para manejar los datos. Piensa en él como un centro de control súper organizado y visual siguiendo la línea de diseño que se ha venido manejando y los efectos tipo glassmorphism.
+Se agregó un buscador inteligente que encuentra al instante una tabla solo con poner el nombre. Y si quieres añadir una nueva, tienes dos botones a la mano: uno para Crearla desde cero y otro para Importar una.
+Una funcionalidad importante y que nos salva de mucho es la validación inteligente. Si intentas importar o crear una tabla que ya existe, el sistema no va a echarlo todo a perder. Al revés, te avisa enseguida y te da la opción de cambiarle el nombre a la nueva o, si estás seguro, sobrescribir la anterior, pero siempre con la confirmación del usuario primero. Así nos aseguramos de que tus datos estén a salvo.
+Además, la gestión ahora es mucho más intuitiva porque puedes subir una imagen a cada tabla. Esto facilita muchísimo la identificación rápida, sobre todo si manejas muchísimas.
+
+Edición de tablas:
+Esta interfaz da control total e instantáneo sobre lo que hay en la tabla que elijas. Tiene ese estilo un poco más claro para identificar mejor los datos de las filas.
+En la parte superior del todo tiene un buscador dinámico; puedes meter cualquier cosa y filtra al momento por cualquier campo, así que encontrar información específica es rápido, y modificar los datos es más cómodo porque los botones de acción están ahí, listos. Si se quiere añadir algo es de dar a 'Nuevo Registro' y sale una fila nueva.
+Si tienes que cambiar algo o borrar un registro, usas 'Editar Fila' o 'Eliminar Fila'. Esto mantiene la información siempre a punto y correcta, y si la tabla se te queda corta, también puedes darle a 'Añadir Columna' y cambiar la estructura.
+Otra parte útil es cómo maneja los distintos tipos de datos. Por ejemplo, te deja meter imágenes directamente en un campo, además de gestionar texto dinámico en los identificadores.
+
+Análisis del código y glosario técnico:
+Se realizó un análisis exhaustivo del código fuente del proyecto, examinando archivos de configuración y componentes clave. Este proceso permitió identificar tecnologías y patrones utilizados, filtrando términos excluidos. Como resultado, se generó un glosario técnico complementario que define conceptos relevantes con explicaciones precisas. Este glosario facilita la comprensión para desarrolladores, evitando investigaciones manuales y reduciendo el tiempo de aprendizaje. Es una herramienta esencial que mejora la eficiencia del equipo y promueve un desarrollo consistente.

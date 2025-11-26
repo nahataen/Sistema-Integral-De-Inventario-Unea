@@ -1,4 +1,135 @@
-/* Global styles - Black Glassmorphism Theme */
+/* Global styles - CSS Variables for Light/Dark Mode */
+
+/* ============================
+    🌙 MATERIAL DESIGN DARK MODE (Default)
+    ============================ */
+:root {
+  /* Background Colors - Material Design Dark */
+  --bg-color: #121212;
+  --bg-primary: #121212;
+  --bg-elevated: #1e1e1e;
+
+  /* Surface Colors - Material Design */
+  --surface-color: #1e1e1e;
+  --surface: #1e1e1e;
+  --surface-secondary: #2d2d2d;
+  --secondary-color: #2d2d2d;
+
+  /* Text Colors - Material Design */
+  --text-color: #ffffff;
+  --text-primary: #ffffff;
+  --text-secondary: #b3b3b3;
+  --text-secondary-color: #b3b3b3;
+
+  /* Border Colors - Material Design */
+  --border-color: #333333;
+  --border: #333333;
+  --border-light: #404040;
+
+  /* Primary/Accent Colors - Material Design Blue */
+  --primary-color: #1976d2;
+  --primary: #1976d2;
+  --accent-color: #1565c0;
+  --accent: #1565c0;
+
+  /* Semantic Colors - Material Design */
+  --success-color: #4caf50;
+  --success-hover: #388e3c;
+  --danger-color: #f44336;
+  --danger-hover: #d32f2f;
+  --warning-color: #ff9800;
+
+  /* Shadow Colors - Material Design */
+  --shadow-color: rgba(0, 0, 0, 0.5);
+  --shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+  --shadow-light: 0 2px 4px rgba(0, 0, 0, 0.4);
+
+  /* Logo Filter (for dark mode - make white) */
+  --logo-filter: brightness(0) invert(1);
+
+  /* Scrollbar Colors - Material Design */
+  --scrollbar-track: #1e1e1e;
+  --scrollbar-thumb: #555555;
+  --scrollbar-thumb-hover: #777777;
+
+  /* Status Indicator Colors */
+  --status-online: #03dac6;
+  --status-offline: #cf6679;
+  --status-pending: #ffb74d;
+}
+
+/* ============================
+   ☀️ LIGHT MODE
+   ============================ */
+[data-theme="light"] {
+  /* Background Colors */
+  --bg-color: #f8f9fa;
+  --bg-primary: #f8f9fa;
+  --bg-elevated: #ffffff;
+
+  /* Surface Colors */
+  --surface-color: #ffffff;
+  --surface: #ffffff;
+  --surface-secondary: #f8f9fa;
+  --secondary-color: #e9ecef;
+
+  /* Text Colors */
+  --text-color: #212529;
+  --text-primary: #212529;
+  --text-secondary: #6c757d;
+  --text-secondary-color: #6c757d;
+
+  /* Border Colors */
+  --border-color: #dee2e6;
+  --border: #dee2e6;
+  --border-light: #e9ecef;
+
+  /* Primary/Accent Colors */
+  --primary-color: #007bff;
+  --primary: #007bff;
+  --accent-color: #0056b3;
+  --accent: #0056b3;
+
+  /* Semantic Colors */
+  --success-color: #28a745;
+  --success-hover: #218838;
+  --danger-color: #dc3545;
+  --danger-hover: #c82333;
+  --warning-color: #ffc107;
+
+  /* Shadow Colors - FLAT STYLE (no shadows) */
+  --shadow-color: transparent;
+  --shadow: none;
+  --shadow-light: none;
+
+  /* Logo Filter (for light mode - keep original/dark) */
+  --logo-filter: none;
+
+  /* Scrollbar Colors */
+  --scrollbar-track: #f8f9fa;
+  --scrollbar-thumb: #dee2e6;
+  --scrollbar-thumb-hover: #adb5bd;
+
+  /* Status Indicator Colors */
+  --status-online: #10b981;
+  --status-offline: #ef4444;
+  --status-pending: #f59e0b;
+}
+
+/* Material Design Dark - No backdrop filters or glass effects */
+.glass-card,
+.glass-button,
+.glass-input {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Force no box-shadow in light mode for flat style */
+[data-theme="light"] .glass-card,
+[data-theme="light"] .glass-button,
+[data-theme="light"] .glass-input {
+  box-shadow: none !important;
+}
 
 * {
   box-sizing: border-box;
@@ -12,11 +143,17 @@ html, body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: rgba(5, 5, 10, 0.95);
-  color: #ffffff;
+  background: var(--bg-color);
+  color: var(--text-color);
   min-height: 100vh;
-  backdrop-filter: blur(30px);
-  -webkit-backdrop-filter: blur(30px);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Remove backdrop-filter in light mode for cleaner look */
+[data-theme="light"] html,
+[data-theme="light"] body {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 code {
@@ -31,29 +168,28 @@ code {
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(15, 15, 25, 0.3);
+  background: var(--scrollbar-track);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--scrollbar-thumb);
   border-radius: 4px;
-  backdrop-filter: blur(10px);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: var(--scrollbar-thumb-hover);
 }
 
 /* Selection styling */
 ::selection {
-  background: rgba(59, 130, 246, 0.3);
-  color: #ffffff;
+  background: var(--primary-color);
+  color: var(--text-color);
 }
 
 /* Focus styles */
 *:focus {
-  outline: 2px solid rgba(59, 130, 246, 0.5);
+  outline: 2px solid var(--primary-color);
   outline-offset: 2px;
 }
 
@@ -71,53 +207,92 @@ input, textarea, select {
 
 /* Link styling */
 a {
-  color: #3b82f6;
+  color: var(--primary-color);
   text-decoration: none;
   transition: color 0.2s ease;
 }
 
 a:hover {
-  color: #60a5fa;
+  color: var(--accent-color);
 }
 
 /* Utility classes */
 .glass-card {
-  background: rgba(15, 15, 25, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--surface-color);
+  border: 1px solid var(--border-color);
   border-radius: 0.75rem;
   backdrop-filter: blur(15px);
   -webkit-backdrop-filter: blur(15px);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--shadow);
+  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .glass-button {
-  background: rgba(25, 25, 35, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--surface-secondary);
+  border: 1px solid var(--border-color);
   border-radius: 0.5rem;
-  color: #ffffff;
+  color: var(--text-color);
   cursor: pointer;
   transition: all 0.2s ease;
   backdrop-filter: blur(10px);
 }
 
 .glass-button:hover {
-  background: rgba(35, 35, 45, 0.8);
+  background: var(--surface-color);
   transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-light);
 }
 
 .glass-input {
-  background: rgba(20, 20, 30, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--surface-color);
+  border: 1px solid var(--border-color);
   border-radius: 0.5rem;
-  color: #ffffff;
+  color: var(--text-color);
   padding: 0.75rem;
   transition: all 0.2s ease;
   backdrop-filter: blur(12px);
 }
 
+.glass-input::placeholder {
+  color: var(--text-secondary-color);
+}
+
 .glass-input:focus {
-  border-color: rgba(59, 130, 246, 0.5);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+  border-color: var(--primary-color);
+  box-shadow: var(--shadow-light);
   outline: none;
+}
+
+/* Light mode specific overrides */
+[data-theme="light"] .glass-card,
+[data-theme="light"] .glass-button,
+[data-theme="light"] .glass-input {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+/* Light mode specific button styles */
+[data-theme="light"] .glass-button {
+  background: var(--surface-color);
+  border: 2px solid var(--border-color);
+  color: var(--text-color);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .glass-button:hover {
+  background: var(--secondary-color);
+  border-color: var(--primary-color);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  transform: translateY(-1px);
+}
+
+/* Light mode specific card styles */
+[data-theme="light"] .glass-card {
+  border: 2px solid var(--border-color);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .glass-card:hover {
+  border-color: var(--primary-color);
+  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
 }

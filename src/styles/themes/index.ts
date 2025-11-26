@@ -69,5 +69,26 @@ export const createGlassInput = (theme: GlassmorphismTheme = blackGlassmorphismT
   transition: 'all 0.2s ease'
 });
 
-// Default export
+// Light Glassmorphism Theme
+export const lightGlassmorphismTheme: GlassmorphismTheme = {
+  name: 'Light Glassmorphism',
+  colors: {
+    primary: 'rgba(37, 99, 235, 0.8)',
+    secondary: 'rgba(248, 249, 250, 0.9)',
+    accent: 'rgba(6, 182, 212, 0.8)',
+    background: '#f8f9fa',
+    surface: 'rgba(255, 255, 255, 0.95)',
+    text: '#212529',
+    textSecondary: '#6c757d',
+    border: 'rgba(0, 0, 0, 0.1)',
+    shadow: 'rgba(0, 0, 0, 0.05)'
+  },
+  effects: {
+    blur: 'backdrop-filter: blur(15px)',
+    borderRadius: '0.75rem',
+    shadow: '0 4px 16px rgba(0, 0, 0, 0.05)'
+  }
+};
+
+// Default export (dark theme as default)
 export default blackGlassmorphismTheme;

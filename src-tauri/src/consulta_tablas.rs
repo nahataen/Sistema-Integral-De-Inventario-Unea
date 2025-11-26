@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::HashMap;
 use tauri::State;
+use base64::{Engine as _, engine::general_purpose};
 
 use crate::database_manager::AppState;
 
@@ -34,16 +35,19 @@ pub fn consulta_tabla(state: State<AppState>, db_name: String, table_name: Strin
     // Abrir la conexión a la base de datos
     let conn = rusqlite::Connection::open(&db_file).map_err(|e| format!("Error al abrir la base de datos: {}", e))?;
 
-    // Obtener las columnas de la tabla
+    // Obtener las columnas de la tabla con sus tipos
     let mut stmt = conn.prepare(&format!("PRAGMA table_info(\"{}\")", table_name))
         .map_err(|e| format!("Error al preparar la consulta de columnas: {}", e))?;
 
-    let columns: Vec<String> = stmt.query_map([], |row| {
+    let columns_info: Vec<(String, String)> = stmt.query_map([], |row| {
         let name: String = row.get(1)?;
-        Ok(name)
+        let type_: String = row.get(2)?;
+        Ok((name, type_))
     }).map_err(|e| format!("Error al ejecutar la consulta de columnas: {}", e))?
-      .collect::<Result<Vec<String>, _>>()
+      .collect::<Result<Vec<(String, String)>, _>>()
       .map_err(|e| format!("Error al obtener columnas: {}", e))?;
+
+    let columns: Vec<String> = columns_info.iter().map(|(name, _)| name.clone()).collect();
 
     // Consultar los datos de la tabla ordenados por "No." ascendente si existe la columna
     let has_no_column = columns.iter().any(|col| col == "No.");
@@ -59,12 +63,21 @@ pub fn consulta_tabla(state: State<AppState>, db_name: String, table_name: Strin
     let rows: Vec<HashMap<String, Value>> = stmt.query_map([], |row| {
         let mut map = HashMap::new();
         for (i, col_name) in columns.iter().enumerate() {
+            let col_type = &columns_info[i].1;
             let value: rusqlite::Result<Value> = match row.get_ref(i) {
                 Ok(rusqlite::types::ValueRef::Null) => Ok(Value::Null),
                 Ok(rusqlite::types::ValueRef::Integer(i)) => Ok(Value::Number(i.into())),
                 Ok(rusqlite::types::ValueRef::Real(f)) => Ok(Value::Number(serde_json::Number::from_f64(f).unwrap())),
                 Ok(rusqlite::types::ValueRef::Text(s)) => Ok(Value::String(String::from_utf8_lossy(s).to_string())),
-                Ok(rusqlite::types::ValueRef::Blob(b)) => Ok(Value::String(format!("BLOB({} bytes)", b.len()))),
+                Ok(rusqlite::types::ValueRef::Blob(b)) => {
+                    if col_type == "BLOB" {
+                        // Return base64 encoded data for BLOB columns (images)
+                        let base64_data = general_purpose::STANDARD.encode(b);
+                        Ok(Value::String(format!("data:image/png;base64,{}", base64_data)))
+                    } else {
+                        Ok(Value::String(format!("BLOB({} bytes)", b.len())))
+                    }
+                },
                 Err(e) => Err(e),
             };
             if let Ok(val) = value {

@@ -1,0 +1,10 @@
+Consideraciones de Seguridad y Optimización de Rendimiento:
+La seguridad fue una prioridad fundamental en el desarrollo del Sistema de Almacén UNEA. Se implementaron múltiples capas de protección para salvaguardar los datos sensibles de la institución. Todas las operaciones de base de datos utilizan prepared statements para prevenir inyección SQL, una vulnerabilidad común en aplicaciones que manejan datos dinámicos. Las comunicaciones entre frontend y backend se realizan a través de IPC seguro proporcionado por Tauri, evitando exposiciones innecesarias a la red.
+
+Se incorporaron validaciones exhaustivas en todas las entradas de usuario, tanto en el frontend como en el backend. Los archivos subidos pasan por verificaciones de tipo y tamaño antes de ser procesados, previniendo ataques de tipo file upload. Las contraseñas y datos sensibles se manejan con cuidado, evitando almacenamiento en texto plano y utilizando prácticas seguras de manejo de memoria en Rust.
+
+En términos de rendimiento, se optimizó la aplicación para un uso eficiente de recursos. La carga perezosa de componentes React reduce el tiempo inicial de carga, mientras que la memoización previene recálculos innecesarios. Las consultas a base de datos se optimizaron con índices apropiados y se implementó paginación para manejar grandes conjuntos de datos sin afectar la responsividad.
+
+El backend Rust proporciona velocidades nativas para operaciones críticas, superando las limitaciones de JavaScript en tareas intensivas. Se implementó manejo asíncrono para operaciones de E/S, permitiendo que la interfaz permanezca responsiva durante procesos largos como importación de datos. El empaquetado con Tauri resulta en aplicaciones ligeras que consumen menos memoria que alternativas basadas en Electron.
+
+Se realizaron pruebas de estrés para asegurar estabilidad bajo carga, y se implementó logging detallado para monitoreo y debugging. Estas medidas garantizan que el sistema no solo sea seguro, sino también eficiente y confiable en entornos de producción.

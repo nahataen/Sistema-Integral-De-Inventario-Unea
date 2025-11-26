@@ -172,22 +172,22 @@ const DatabaseDashboard = () => {
       <style>{`
         .hub-main-scroll {
           scrollbar-width: thin;
-          scrollbar-color: #2563eb #1e293b;
+          scrollbar-color: var(--primary-color) var(--surface-color);
         }
         .hub-main-scroll::-webkit-scrollbar {
           width: 10px;
         }
         .hub-main-scroll::-webkit-scrollbar-track {
-          background: #1e293b;
+          background: var(--surface-color);
         }
         .hub-main-scroll::-webkit-scrollbar-thumb {
-          background: linear-gradient(180deg, #2563eb, #1d4ed8);
+          background: linear-gradient(180deg, var(--primary-color), var(--accent-color));
           border-radius: 8px;
-          border: 3px solid #1e293b;
+          border: 3px solid var(--surface-color);
           transition: background 0.3s;
         }
         .hub-main-scroll::-webkit-scrollbar-thumb:hover {
-          background: #3b82f6;
+          background: var(--primary-color);
         }
       `}</style>
     </div>
