@@ -6,6 +6,11 @@ use serde_json;
 use base64::{Engine as _, engine::general_purpose};
 use crate::database_manager::AppState;
 
+// Helper function to quote SQL identifiers (table names, column names) for SQLite
+fn quote_identifier(s: &str) -> String {
+    format!("\"{}\"", s)
+}
+
 // Convierte un valor JSON de Serde a un valor SQL de Rusqlite.
 fn convert_json_to_sql(json_value: &serde_json::Value, column_type: Option<&String>) -> Result<Value, String> {
     match json_value {
@@ -45,10 +50,14 @@ pub fn update_table_row(
     pk_value: serde_json::Value,
     updates: HashMap<String, serde_json::Value>,
     column_types: Option<HashMap<String, String>>,
+    _column_notnull: Option<HashMap<String, i32>>,
 ) -> Result<bool, String> {
     if updates.is_empty() {
         return Err("No hay datos para actualizar.".to_string());
     }
+
+    // Use all updates directly since frontend validates null values
+    let filtered_updates = updates;
 
     // Determina la ruta del archivo de la base de datos.
     let db_path = state.db_dir.join(format!("{}.db", db_name));
@@ -65,33 +74,37 @@ pub fn update_table_row(
         .map_err(|e| format!("Error al abrir la base de datos: {}", e))?;
 
     // Construye la cláusula SET de la consulta SQL.
-    let set_clause: Vec<String> = updates
+    let set_clause: Vec<String> = filtered_updates
         .keys()
-        .map(|k| format!("\"{}\" = ?", k))
+        .map(|k| format!("{} = ?", quote_identifier(k)))
         .collect();
 
     // Construye la consulta SQL completa.
     let sql = format!(
-        "UPDATE \"{}\" SET {} WHERE \"{}\" = ?",
-        table_name,
+        "UPDATE {} SET {} WHERE {} = ?",
+        quote_identifier(&table_name),
         set_clause.join(", "),
-        pk_column
+        quote_identifier(&pk_column)
     );
 
     // Prepara los parámetros para la consulta.
     let mut params: Vec<Value> = Vec::new();
-    for key in updates.keys() {
-        let value = &updates[key];
+    for key in filtered_updates.keys() {
+        let value = &filtered_updates[key];
         let col_type = column_types.as_ref().and_then(|ct| ct.get(key));
         params.push(convert_json_to_sql(value, col_type)?);
     }
     params.push(convert_json_to_sql(&pk_value, None)?);
+
+
 
     let params_refs: Vec<&dyn ToSql> = params.iter().map(|v| v as &dyn ToSql).collect();
 
     // Ejecuta la consulta de actualización.
     let rows_affected = conn.execute(&sql, params_refs.as_slice())
         .map_err(|e| format!("Error al ejecutar UPDATE: {}", e))?;
+
+
 
     if rows_affected == 0 {
         return Err(format!("No se encontró ninguna fila con {} = {:?}", pk_column, pk_value));
@@ -125,9 +138,9 @@ pub fn delete_table_row(
 
     // Construye la consulta SQL de eliminación.
     let sql = format!(
-        "DELETE FROM \"{}\" WHERE \"{}\" = ?",
-        table_name,
-        pk_column
+        "DELETE FROM {} WHERE {} = ?",
+        quote_identifier(&table_name),
+        quote_identifier(&pk_column)
     );
 
     // Convierte el valor de la clave primaria a un valor SQL.
@@ -180,7 +193,7 @@ pub fn crear_registro_con_auto_incremento_no(
         .map_err(|e| format!("Error al abrir la base de datos: {}", e))?;
 
     // Obtener el último valor de "No." en la tabla ordenado numéricamente
-    let last_no_query = format!("SELECT \"No.\" FROM \"{}\" WHERE \"No.\" IS NOT NULL AND \"No.\" != '' ORDER BY CAST(\"No.\" AS INTEGER) DESC LIMIT 1", table_name);
+    let last_no_query = format!("SELECT {} FROM {} WHERE {} IS NOT NULL AND {} != '' ORDER BY CAST({} AS INTEGER) DESC LIMIT 1", quote_identifier("No."), quote_identifier(&table_name), quote_identifier("No."), quote_identifier("No."), quote_identifier("No."));
     let mut stmt = conn.prepare(&last_no_query)
         .map_err(|e| format!("Error al preparar consulta para obtener último No.: {}", e))?;
 
@@ -190,7 +203,7 @@ pub fn crear_registro_con_auto_incremento_no(
     let next_no = last_no.map(|n| n + 1).unwrap_or(1);
 
     // Verificar que el número no exista ya (por si acaso)
-    let check_query = format!("SELECT COUNT(*) FROM \"{}\" WHERE \"No.\" = ?", table_name);
+    let check_query = format!("SELECT COUNT(*) FROM {} WHERE {} = ?", quote_identifier(&table_name), quote_identifier("No."));
     let mut check_stmt = conn.prepare(&check_query)
         .map_err(|e| format!("Error al preparar consulta de verificación: {}", e))?;
 
@@ -199,7 +212,7 @@ pub fn crear_registro_con_auto_incremento_no(
 
     let final_no = if count > 0 {
         // Si ya existe, buscar el siguiente número disponible
-        let find_next_query = format!("SELECT \"No.\" + 1 FROM \"{}\" WHERE \"No.\" + 1 NOT IN (SELECT \"No.\" FROM \"{}\") AND \"No.\" IS NOT NULL ORDER BY \"No.\" LIMIT 1", table_name, table_name);
+        let find_next_query = format!("SELECT {} + 1 FROM {} WHERE {} + 1 NOT IN (SELECT {} FROM {}) AND {} IS NOT NULL ORDER BY {} LIMIT 1", quote_identifier("No."), quote_identifier(&table_name), quote_identifier("No."), quote_identifier("No."), quote_identifier(&table_name), quote_identifier("No."), quote_identifier("No."));
         let mut find_stmt = conn.prepare(&find_next_query)
             .map_err(|e| format!("Error al preparar consulta para encontrar siguiente número: {}", e))?;
 
@@ -220,12 +233,12 @@ pub fn crear_registro_con_auto_incremento_no(
     data_with_no.insert("No.".to_string(), serde_json::Value::Number(serde_json::Number::from(final_no)));
 
     // Construir la consulta INSERT
-    let columns: Vec<String> = data_with_no.keys().map(|k| format!("\"{}\"", k)).collect();
+    let columns: Vec<String> = data_with_no.keys().map(|k| quote_identifier(k)).collect();
     let placeholders: Vec<String> = (0..data_with_no.len()).map(|_| "?".to_string()).collect();
 
     let sql = format!(
-        "INSERT INTO \"{}\" ({}) VALUES ({})",
-        table_name,
+        "INSERT INTO {} ({}) VALUES ({})",
+        quote_identifier(&table_name),
         columns.join(", "),
         placeholders.join(", ")
     );

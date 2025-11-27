@@ -21,6 +21,7 @@ interface TableData {
 interface ColumnInfo {
   name: string;
   type_: string;
+  notnull: number;
 }
 
 interface ConsultaTablaFrontProps {
@@ -31,7 +32,8 @@ interface ConsultaTablaFrontProps {
   onSaveRow?: (
     pk: { name: string; value: any },
     updatedData: Record<string, any>,
-    columnTypes?: Record<string, string>
+    columnTypes?: Record<string, string>,
+    columnNotNull?: Record<string, number>
   ) => Promise<boolean>;
   onDeleteRow?: (pk: { name: string; value: any }) => Promise<boolean>;
   searchTerm?: string;
@@ -58,6 +60,7 @@ const TablaSegura: React.FC<ConsultaTablaFrontProps> = memo(({
   const [tableData, setTableData] = useState<TableData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [dataVersion, setDataVersion] = useState(0); // Force re-renders
 
   const [editingRowId, setEditingRowId] = useState<number | null>(null);
   const [editData, setEditData] = useState<Record<string, any>>({});
@@ -73,6 +76,7 @@ const TablaSegura: React.FC<ConsultaTablaFrontProps> = memo(({
   const [columnToDelete, setColumnToDelete] = useState<string | null>(null);
 
   const [columnTypes, setColumnTypes] = useState<Record<string, string>>({});
+  const [columnNotNull, setColumnNotNull] = useState<Record<string, number>>({});
 
 
   // =========================================
@@ -90,19 +94,27 @@ const TablaSegura: React.FC<ConsultaTablaFrontProps> = memo(({
 
       const sanitizedRows = response.rows.map(r => {
         const x: Record<string, any> = {};
-        Object.keys(r).forEach(k => x[k] = r[k] === null ? "" : r[k]);
+        Object.keys(r).forEach(k => {
+          // Preserve null values for display - convert to empty string only for text input display
+          x[k] = r[k];
+        });
         return x;
       });
 
-      setTableData({ ...response, rows: sanitizedRows });
+      const newTableData = { ...response, rows: sanitizedRows };
+      setTableData(newTableData);
+      setDataVersion(prev => prev + 1);
 
       // Fetch column types
       const columnInfo: ColumnInfo[] = await invoke("get_column_info", { dbName, tableName });
       const types: Record<string, string> = {};
+      const notNull: Record<string, number> = {};
       columnInfo.forEach(col => {
         types[col.name] = col.type_;
+        notNull[col.name] = col.notnull;
       });
       setColumnTypes(types);
+      setColumnNotNull(notNull);
     } catch (e) {
       setError("No se pudieron cargar los datos.");
       toast.error("No se pudieron cargar los datos de la tabla.");
@@ -116,15 +128,18 @@ const TablaSegura: React.FC<ConsultaTablaFrontProps> = memo(({
   // =========================================
   const processedRows = useMemo(() => {
     if (!tableData) return [];
-    if (!searchTerm.trim()) return tableData.rows;
+
+    if (!searchTerm.trim()) {
+      return tableData.rows;
+    }
 
     const lower = searchTerm.toLowerCase();
     return tableData.rows.filter(row =>
       tableData.columns.some(col =>
-        String(row[col] ?? "").toLowerCase().includes(lower)
+        String(row[col] === null ? "" : row[col]).toLowerCase().includes(lower)
       )
     );
-  }, [tableData?.rows, tableData?.columns, searchTerm]);
+  }, [tableData?.rows, tableData?.columns, searchTerm, dataVersion]);
 
   const getRowPK = useCallback((rowIndex: number) => {
     if (!tableData || !processedRows[rowIndex]) return null;
@@ -139,6 +154,10 @@ const TablaSegura: React.FC<ConsultaTablaFrontProps> = memo(({
 
   const isImageColumn = useCallback((columnName: string) => {
     return columnTypes[columnName] === "BLOB";
+  }, [columnTypes]);
+
+  const isDateTimeColumn = useCallback((columnName: string) => {
+    return columnTypes[columnName]?.toUpperCase() === "DATETIME";
   }, [columnTypes]);
 
   // =========================================
@@ -186,18 +205,40 @@ const TablaSegura: React.FC<ConsultaTablaFrontProps> = memo(({
     const payload = { ...editData };
     delete payload[pk.name];
 
+    // Validate that no required fields are empty
+    const emptyFields: string[] = [];
     Object.keys(payload).forEach(k => {
-      if (payload[k] === "") payload[k] = null;
       // For image columns, extract base64 data from data URL
       if (isImageColumn(k) && typeof payload[k] === 'string' && payload[k].startsWith('data:image/')) {
         const base64Data = payload[k].split(',')[1]; // Remove "data:image/png;base64," prefix
         payload[k] = base64Data;
+      } else if (payload[k] === "" || payload[k] === null) {
+        // Check if this is a required field (not null constraint)
+        if (columnNotNull[k] === 1) {
+          emptyFields.push(k);
+        }
+      }
+    });
+
+    // If there are empty required fields, show error and don't save
+    if (emptyFields.length > 0) {
+      toast.error(`No se pueden dejar valores nulos en los campos: ${emptyFields.join(', ')}`);
+      return;
+    }
+
+    // Filter out null values for NOT NULL columns to prevent constraint violations
+    Object.keys(payload).forEach(k => {
+      if (payload[k] === null && columnNotNull[k] === 1) {
+        delete payload[k];
       }
     });
 
     try {
-      const ok = await onSaveRow(pk, payload, columnTypes);
+      const ok = await onSaveRow(pk, payload, columnTypes, columnNotNull);
+
       if (ok) {
+        // Add a small delay to ensure database transaction completes
+        await new Promise(resolve => setTimeout(resolve, 200));
         await fetchTableData();
         setEditingRowId(null);
         toast.success("Fila guardada exitosamente.");
@@ -207,7 +248,7 @@ const TablaSegura: React.FC<ConsultaTablaFrontProps> = memo(({
     } catch (e) {
       toast.error(`Error al guardar: ${e}`);
     }
-  }, [editingRowId, editData, onSaveRow, getRowPK, fetchTableData, isImageColumn]);
+  }, [editingRowId, editData, onSaveRow, getRowPK, fetchTableData, isImageColumn, columnNotNull]);
 
   const handleConfirmDelete = useCallback(async () => {
     if (selectedRowId === null || selectedRowId < 0) return;
@@ -228,19 +269,34 @@ const TablaSegura: React.FC<ConsultaTablaFrontProps> = memo(({
     }
   }, [selectedRowId, onDeleteRow, getRowPK, fetchTableData, onRowSelect]);
 
+  // === AQUÍ ESTÁ LA VALIDACIÓN DE COLUMNA DUPLICADA ===
   const handleConfirmAddColumn = useCallback(async () => {
-    if (!newColumnName.trim()) {
+    const trimmedName = newColumnName.trim();
+
+    // 1. Validar que no esté vacío
+    if (!trimmedName) {
       return toast.error("El nombre de la columna no puede estar vacío.");
+    }
+
+    // 2. Validar duplicados (Case Insensitive)
+    if (tableData?.columns) {
+        const columnExists = tableData.columns.some(
+            col => col.toLowerCase() === trimmedName.toLowerCase()
+        );
+
+        if (columnExists) {
+            return toast.error(`La columna "${trimmedName}" ya existe. Por favor, usa otro nombre.`);
+        }
     }
 
     try {
       await invoke('add_new_column', {
         dbName,
         tableName,
-        columnName: newColumnName,
+        columnName: trimmedName,
         columnType: newColumnType,
       });
-      toast.success(`Columna "${newColumnName}" añadida exitosamente.`);
+      toast.success(`Columna "${trimmedName}" añadida exitosamente.`);
       await fetchTableData();
       setIsAddColumnModalOpen(false);
       setNewColumnName('');
@@ -248,7 +304,7 @@ const TablaSegura: React.FC<ConsultaTablaFrontProps> = memo(({
     } catch (e) {
       toast.error(`Error al añadir columna: ${e}`);
     }
-  }, [dbName, tableName, newColumnName, newColumnType, fetchTableData]);
+  }, [dbName, tableName, newColumnName, newColumnType, fetchTableData, tableData]); // Se añade tableData a las dependencias
 
   const handleConfirmDeleteColumn = useCallback(async () => {
     if (!columnToDelete) return;
@@ -281,7 +337,10 @@ const TablaSegura: React.FC<ConsultaTablaFrontProps> = memo(({
       <div className="dark-grid-wrapper">
         <div className="dark-grid">
           <div className="dark-grid-toolbar">
-            <h2 className="dark-grid-title">{tableData.table_name}</h2>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <h2 className="dark-grid-title">{tableData.table_name}</h2>
+              <span style={{ fontSize: '12px', color: '#666' }}>(v{dataVersion})</span>
+            </div>
             <div className="dark-grid-actions">
               {editingRowId === null ? (
                 <>
@@ -298,7 +357,8 @@ const TablaSegura: React.FC<ConsultaTablaFrontProps> = memo(({
                     disabled={selectedRowId === null || selectedRowId < 0}
                     onClick={() => {
                       if (selectedRowId !== null && selectedRowId >= 0) {
-                        setEditData({ ...processedRows[selectedRowId] });
+                        const rowData = processedRows[selectedRowId];
+                        setEditData({ ...rowData });
                         setEditingRowId(selectedRowId);
                       }
                     }}
@@ -341,7 +401,7 @@ const TablaSegura: React.FC<ConsultaTablaFrontProps> = memo(({
               <thead>
                 <tr>
                   {tableData.columns.map(col => {
-                    const isProtected = PROTECTED_COLUMNS.some(pCol => pCol.toLowerCase() === col.toLowerCase());
+                    const isProtected = PROTECTED_COLUMNS.some(pCol => pCol.toLowerCase() === col.toLowerCase()) && columnTypes[col] !== 'DATETIME';
                     return (
                       <th key={col} className="dark-grid-th">
                         <div className="dark-grid-th-content">
@@ -369,9 +429,13 @@ const TablaSegura: React.FC<ConsultaTablaFrontProps> = memo(({
                 {processedRows.map((row, idx) => {
                   const isSelected = selectedRowId === idx;
                   const isEditing = editingRowId === idx;
+                  // Create a stable key using primary key if available
+                  const pk = getRowPK(idx);
+                  const rowKey = pk ? `${pk.name}-${pk.value}` : `row-${idx}`;
+
                   return (
                     <tr
-                      key={idx}
+                      key={rowKey}
                       onClick={(e) => handleRowClick(e, idx)}
                       onDoubleClick={(e) => handleRowDoubleClick(e, idx)}
                       className={`dark-grid-tr
@@ -380,13 +444,14 @@ const TablaSegura: React.FC<ConsultaTablaFrontProps> = memo(({
                       `}
                     >
                       {tableData.columns.map(col => {
-                        const isAuto = ["no", "no.", "id"].includes(col.toLowerCase());
+                        const isAuto = ["no", "no.", "id", "fecha"].includes(col.toLowerCase());
                         const isImage = isImageColumn(col);
                         return (
                           <td key={`${idx}-${col}`} className="dark-grid-td">
-                            {isEditing && !isAuto ? (
+                            {isEditing && !isAuto && !isDateTimeColumn(col) ? (
                               isImage ? (
                                 <input
+                                  key={`edit-${editingRowId}-${col}`}
                                   type="file"
                                   accept="image/*"
                                   className="dark-grid-input"
@@ -405,13 +470,14 @@ const TablaSegura: React.FC<ConsultaTablaFrontProps> = memo(({
                                 />
                               ) : (
                                 <input
+                                  key={`edit-${editingRowId}-${col}`}
                                   className="dark-grid-input"
                                   value={editData[col] ?? ""}
                                   onChange={(e) => setEditData({ ...editData, [col]: e.target.value })}
                                 />
                               )
                             ) : (
-                              isImage && row[col] && typeof row[col] === 'string' && row[col].startsWith('data:image/') ? (
+                              isImage && row[col] && typeof row[col] === 'string' && row[col] !== null && row[col].startsWith('data:image/') ? (
                                 <img
                                   src={row[col]}
                                   alt={col}
@@ -419,7 +485,7 @@ const TablaSegura: React.FC<ConsultaTablaFrontProps> = memo(({
                                   style={{ maxWidth: '50px', maxHeight: '50px', objectFit: 'cover' }}
                                 />
                               ) : (
-                                <span className="dark-grid-text">{row[col] ?? ""}</span>
+                                <span className="dark-grid-text">{row[col] === null ? "" : row[col]}</span>
                               )
                             )}
                           </td>
@@ -491,6 +557,7 @@ const TablaSegura: React.FC<ConsultaTablaFrontProps> = memo(({
                 >
                   <option value="text">Texto</option>
                   <option value="image">Imagen</option>
+                  <option value="datetime">Fecha</option>
                 </select>
               </div>
             </div>

@@ -13,6 +13,16 @@ use crate::database_manager::AppState;
 pub enum ColumnType {
     Text,
     Image,
+    DateTime,
+}
+/// Helper function to quote identifiers containing spaces or special characters for SQLite.
+/// Identifiers are quoted with double quotes if they contain spaces or non-alphanumeric characters (except underscores).
+fn quote_identifier(identifier: &str) -> String {
+    if identifier.chars().any(|c| c.is_whitespace() || (!c.is_alphanumeric() && c != '_')) {
+        format!("\"{}\"", identifier)
+    } else {
+        identifier.to_string()
+    }
 }
 
 /// Función expuesta a Tauri para agregar una nueva columna a una tabla específica.
@@ -49,20 +59,49 @@ pub fn add_new_column(
     let conn = Connection::open(&db_file)
         .map_err(|e| format!("Error al abrir la base de datos: {}", e))?;
 
+    // Check for duplicate column
+    let query = format!("PRAGMA table_info({})", quote_identifier(&table_name));
+    let mut stmt = conn.prepare(&query)
+        .map_err(|e| format!("Error preparing PRAGMA query: {}", e))?;
+
+    let existing_columns = stmt.query_map([], |row| {
+        row.get::<_, String>(1)
+    }).map_err(|e| format!("Error querying table info: {}", e))?;
+
+    let mut column_names: Vec<String> = Vec::new();
+    for name_result in existing_columns {
+        column_names.push(name_result.map_err(|e| format!("Error getting column name: {}", e))?);
+    }
+
+    let column_name_lower = column_name.to_lowercase();
+    if column_names.iter().any(|name| name.to_lowercase() == column_name_lower) {
+        return Err(format!("Column '{}' already exists in table '{}'", column_name, table_name));
+    }
+
+    // Handle DateTime separately
+    if let ColumnType::DateTime = column_type {
+        return crate::crear_columna_fecha::add_date_column(
+            db_file.to_str().unwrap(),
+            &table_name,
+            &column_name,
+        );
+    }
+
     // 3. Determinar el tipo de dato SQL basado en la elección del usuario.
     //    - Text -> TEXT: Almacenará cadenas de texto.
     //    - Image -> BLOB: Almacenará datos binarios, como el contenido de una imagen.
     let sql_type = match column_type {
         ColumnType::Text => "TEXT",
         ColumnType::Image => "BLOB",
+        ColumnType::DateTime => unreachable!(), // Already handled above
     };
 
     // 4. Construir la sentencia SQL para agregar la nueva columna.
     //    Se usan comillas dobles para asegurar compatibilidad con nombres de tablas/columnas
     //    que puedan contener espacios o palabras clave de SQL.
     let sql = format!(
-        "ALTER TABLE \"{}\" ADD COLUMN \"{}\" {}",
-        table_name, column_name, sql_type
+        "ALTER TABLE \"{}\" ADD COLUMN {} {}",
+        table_name, quote_identifier(&column_name), sql_type
     );
 
     // 5. Ejecutar la sentencia SQL.

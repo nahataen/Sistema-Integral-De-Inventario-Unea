@@ -3,12 +3,24 @@ use serde::{Deserialize, Serialize};
 use tauri::State;
 use crate::database_manager::AppState;
 
+/// Helper function to quote SQL identifiers (table names, column names) for SQLite
+/// Identifiers are quoted with double quotes if they contain spaces or non-alphanumeric characters (except underscores).
+fn quote_identifier(identifier: &str) -> String {
+    if identifier.chars().any(|c| c.is_whitespace() || (!c.is_alphanumeric() && c != '_')) {
+        format!("\"{}\"", identifier.replace("\"", "\"\""))
+    } else {
+        identifier.to_string()
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ColumnInfo {
     /// Nombre de la columna
     pub name: String,
     /// Tipo de la columna (TEXT, BLOB, INTEGER, etc.)
     pub type_: String,
+    /// Si la columna permite valores NULL (0 = permite, 1 = NOT NULL)
+    pub notnull: i32,
 }
 
 /// Get column information for a table, including data types
@@ -34,13 +46,14 @@ pub fn get_column_info(
         .map_err(|e| format!("Error opening database: {}", e))?;
 
     // Get column information using PRAGMA table_info
-    let mut pragma_stmt = conn.prepare(&format!("PRAGMA table_info(\"{}\")", table_name))
+    let mut pragma_stmt = conn.prepare(&format!("PRAGMA table_info({})", quote_identifier(&table_name)))
         .map_err(|e| format!("Error preparing PRAGMA query: {}", e))?;
 
     let columns_info: Vec<ColumnInfo> = pragma_stmt.query_map([], |row| {
         let name: String = row.get(1)?;
         let type_: String = row.get(2)?;
-        Ok(ColumnInfo { name, type_ })
+        let notnull: i32 = row.get(3)?;
+        Ok(ColumnInfo { name, type_, notnull })
     })
     .map_err(|e| format!("Error querying table info: {}", e))?
     .collect::<Result<Vec<_>, _>>()

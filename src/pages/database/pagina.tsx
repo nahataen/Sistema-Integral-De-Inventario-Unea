@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { invoke } from '@tauri-apps/api/tauri';
+import toast, { Toaster } from "react-hot-toast";
 import TablaSegura from '../../components/ui/TablaSegura';
 import '../../styles/estilosPaginatsx.css';
 
@@ -18,10 +19,12 @@ const Pagina = () => {
     setSelectedRowId(newSelectedId);
   };
 
-  const handleSaveRow = async (pk: { name: string, value: any }, updatedData: Record<string, any>, columnTypes?: Record<string, string>): Promise<boolean> => {
+  const handleSaveRow = async (pk: { name: string, value: any }, updatedData: Record<string, any>, columnTypes?: Record<string, string>, columnNotNull?: Record<string, number>): Promise<boolean> => {
     try {
       if (!dbName || !tableName) throw new Error('Nombre de base de datos o tabla no especificado.');
       if (!pk || pk.name === undefined || pk.value === undefined) throw new Error('Clave primaria inválida.');
+
+      console.log('Updating row with data:', updatedData);
 
       const result = await invoke('update_table_row', {
         dbName: dbName.trim(),
@@ -30,12 +33,15 @@ const Pagina = () => {
         pkValue: pk.value,
         updates: updatedData,
         columnTypes,
+        columnNotNull,
       });
 
-      return result === true;
+      console.log('Update result:', result);
+      return true;
     } catch (error) {
+      console.error('Error updating row:', error);
       const errorMessage = error instanceof Error ? error.message : String(error);
-      alert('Error al actualizar la fila:\n' + errorMessage);
+      toast.error(`Error al guardar: ${errorMessage}`);
       return false;
     }
   };
@@ -136,6 +142,8 @@ const Pagina = () => {
           </div>
         )}
       </main>
+
+      <Toaster position="bottom-center" containerStyle={{ zIndex: 99999, bottom: '50px' }} />
     </div>
   );
 };

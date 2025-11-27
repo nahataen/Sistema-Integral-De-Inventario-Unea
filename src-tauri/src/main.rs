@@ -16,6 +16,7 @@ mod validar_columna;
 mod subir_imagen;
 mod detalle_registro;
 mod obtener_info_columnas;
+mod crear_columna_fecha;
 use tauri::Builder;
 
 use database_manager::{

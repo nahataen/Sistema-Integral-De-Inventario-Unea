@@ -4,6 +4,15 @@ use tauri::State;
 
 // Importar AppState para acceder al directorio de la base de datos.
 use crate::database_manager::AppState;
+/// Helper function to quote identifiers containing spaces or special characters for SQLite.
+/// Identifiers are quoted with double quotes if they contain spaces or non-alphanumeric characters (except underscores).
+fn quote_identifier(identifier: &str) -> String {
+    if identifier.chars().any(|c| c.is_whitespace() || (!c.is_alphanumeric() && c != '_')) {
+        format!("\"{}\"", identifier)
+    } else {
+        identifier.to_string()
+    }
+}
 
 /// Lista de columnas protegidas que no pueden ser eliminadas.
 const PROTECTED_COLUMNS: [&str; 3] = ["ID", "Zona", "Campus"];
@@ -48,9 +57,9 @@ pub fn delete_column(
     // 4. Construir la sentencia SQL para eliminar la columna.
     //    SQLite introdujo DROP COLUMN en la versión 3.35.0. Esto podría fallar en versiones antiguas.
     let sql = format!(
-        "ALTER TABLE \"{}\" DROP COLUMN \"{}\"",
+        "ALTER TABLE \"{}\" DROP COLUMN {}",
         table_name,
-        column_name
+        quote_identifier(&column_name)
     );
 
     // 5. Ejecutar la sentencia SQL.

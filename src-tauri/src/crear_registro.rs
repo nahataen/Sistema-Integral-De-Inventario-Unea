@@ -3,6 +3,7 @@ use serde::Deserialize;
 use tauri::State;
 use base64::{Engine as _, engine::general_purpose};
 use crate::database_manager::AppState;
+use chrono::Local;
 
 #[derive(Debug, Deserialize)]
 pub struct NuevoRegistro {
@@ -10,6 +11,10 @@ pub struct NuevoRegistro {
     pub table_name: String,
     pub id_column: String,
     pub data: serde_json::Value,
+}
+
+fn quote_identifier(s: &str) -> String {
+    format!("\"{}\"", s)
 }
 
 #[tauri::command]
@@ -98,7 +103,7 @@ pub fn crear_registro_con_auto_incremento(
     // 5. Crear SQL dinámico
     // ==============================
     let quoted_columns = columns.iter()
-        .map(|c| format!("\"{}\"", c))
+        .map(|c| quote_identifier(c))
         .collect::<Vec<_>>()
         .join(", ");
 
@@ -108,8 +113,8 @@ pub fn crear_registro_con_auto_incremento(
         .join(", ");
 
     let sql = format!(
-        "INSERT INTO \"{}\" ({}) VALUES ({})",
-        registro.table_name,
+        "INSERT INTO {} ({}) VALUES ({})",
+        quote_identifier(&registro.table_name),
         quoted_columns,
         placeholders
     );
@@ -173,7 +178,11 @@ pub fn crear_registro_con_auto_incremento(
                 params.push(Box::new(rusqlite::types::Null));
             } else {
                 // For other columns, use an empty string to satisfy NOT NULL constraints.
-                params.push(Box::new("".to_string()));
+                if col_type == "DATETIME" {
+                    params.push(Box::new(Local::now().to_rfc3339()));
+                } else {
+                    params.push(Box::new("".to_string()));
+                }
             }
         }
     }

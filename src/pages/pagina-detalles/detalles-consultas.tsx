@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { invoke } from '@tauri-apps/api/tauri';
-import toast from 'react-hot-toast';
+import toast, { Toaster } from 'react-hot-toast';
 import { generateBulkPDF } from '../../utils/pdfGenerator';
 import "../../styles/tabla.css";
 import styles from './detalles-consultas.module.css';
@@ -302,6 +302,8 @@ const DetallesConsultas: React.FC = () => {
           </div>
         </div>
       )}
+
+      <Toaster position="bottom-center" containerStyle={{ zIndex: 99999 }} />
     </div>
   );
 };

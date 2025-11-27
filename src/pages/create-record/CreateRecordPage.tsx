@@ -6,6 +6,7 @@ import "../../styles/tabla.css";
 interface ColumnInfo {
   name: string;
   type_: string;
+  notnull: number;
 }
 
 // =========================================
@@ -33,6 +34,7 @@ const CreateRecordPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [newRecordData, setNewRecordData] = useState<Record<string, any>>({});
   const [columnTypes, setColumnTypes] = useState<Record<string, string>>({});
+  const [columnNotNull, setColumnNotNull] = useState<Record<string, number>>({});
 
   // =========================================
   // Obtener datos de la tabla
@@ -58,13 +60,16 @@ const CreateRecordPage: React.FC = () => {
       // Fetch column types
       const columnInfo: ColumnInfo[] = await invoke("get_column_info", { dbName, tableName });
       const types: Record<string, string> = {};
+      const notNull: Record<string, number> = {};
       columnInfo.forEach(col => {
         types[col.name] = col.type_;
+        notNull[col.name] = col.notnull;
       });
       setColumnTypes(types);
+      setColumnNotNull(notNull);
 
       // Inicializar datos del nuevo registro
-      initializeNewRecordData({ ...response, rows: sanitizedRows });
+      initializeNewRecordData({ ...response, rows: sanitizedRows }, types);
     } catch (e) {
       setError("No se pudieron cargar los datos.");
     } finally {
@@ -75,7 +80,7 @@ const CreateRecordPage: React.FC = () => {
   // =========================================
   // Inicializar datos del nuevo registro
   // =========================================
-  const initializeNewRecordData = useCallback((data: TableData) => {
+  const initializeNewRecordData = useCallback((data: TableData, columnTypes: Record<string, string>) => {
     const defaults: Record<string, any> = {};
 
     // Generar ID autoincremental
@@ -94,11 +99,12 @@ const CreateRecordPage: React.FC = () => {
       const lower = col.toLowerCase();
       if (lower === "zona") defaults[col] = "Centro/Noroeste";
       else if (lower === "campus") defaults[col] = "Florido";
+      else if (columnTypes[col] === 'DATETIME') defaults[col] = new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16);
       else if (!defaults[col]) defaults[col] = "";
     });
 
     setNewRecordData(defaults);
-  }, []);
+  }, [columnTypes]);
 
   // =========================================
   // Obtener columna ID
@@ -128,7 +134,11 @@ const CreateRecordPage: React.FC = () => {
     const payload = { ...newRecordData };
 
     Object.keys(payload).forEach(k => {
-      if (payload[k] === "") payload[k] = null;
+      if (payload[k] === "") {
+        if (columnNotNull[k] === 0) { // allows null
+          payload[k] = null;
+        } // else keep as "" for NOT NULL, let backend handle
+      }
       // For image columns, extract base64 data from data URL
       if (isImageColumn(k) && typeof payload[k] === 'string' && payload[k].startsWith('data:image/')) {
         const base64Data = payload[k].split(',')[1]; // Remove "data:image/png;base64," prefix
@@ -195,7 +205,7 @@ const CreateRecordPage: React.FC = () => {
               {tableData.columns.map(col => {
                 const lower = col.toLowerCase();
                 const isIdColumn = ["no", "no.", "id"].includes(lower);
-                const locked = ["zona", "campus"].includes(lower) || isIdColumn;
+                const locked = ["zona", "campus"].includes(lower) || isIdColumn || columnTypes[col] === 'DATETIME';
                 const isImage = isImageColumn(col);
 
                 return (
@@ -228,6 +238,14 @@ const CreateRecordPage: React.FC = () => {
                           }
                         }}
                         disabled={locked}
+                      />
+                    ) : columnTypes[col] === 'DATETIME' ? (
+                      <input
+                        type="datetime-local"
+                        className={`field-input locked`}
+                        value={newRecordData[col]?.slice(0,16) || ""}
+                        disabled
+                        placeholder="Campo bloqueado"
                       />
                     ) : (
                       <input

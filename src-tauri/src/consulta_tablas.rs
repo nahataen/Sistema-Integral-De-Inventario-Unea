@@ -8,6 +8,13 @@ use base64::{Engine as _, engine::general_purpose};
 
 use crate::database_manager::AppState;
 
+/// Helper function to properly quote SQL identifiers (table names, column names)
+/// Handles identifiers with spaces or special characters by wrapping in double quotes
+/// and escaping any existing double quotes by doubling them
+fn quote_identifier(identifier: &str) -> String {
+    format!("\"{}\"", identifier.replace("\"", "\"\""))
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct TableData {
     /// Nombre de la tabla
@@ -36,7 +43,7 @@ pub fn consulta_tabla(state: State<AppState>, db_name: String, table_name: Strin
     let conn = rusqlite::Connection::open(&db_file).map_err(|e| format!("Error al abrir la base de datos: {}", e))?;
 
     // Obtener las columnas de la tabla con sus tipos
-    let mut stmt = conn.prepare(&format!("PRAGMA table_info(\"{}\")", table_name))
+    let mut stmt = conn.prepare(&format!("PRAGMA table_info({})", quote_identifier(&table_name)))
         .map_err(|e| format!("Error al preparar la consulta de columnas: {}", e))?;
 
     let columns_info: Vec<(String, String)> = stmt.query_map([], |row| {
@@ -52,11 +59,11 @@ pub fn consulta_tabla(state: State<AppState>, db_name: String, table_name: Strin
     // Consultar los datos de la tabla ordenados por "No." ascendente si existe la columna
     let has_no_column = columns.iter().any(|col| col == "No.");
     let order_clause = if has_no_column {
-        " ORDER BY CAST(\"No.\" AS INTEGER) ASC"
+        format!(" ORDER BY CAST({} AS INTEGER) ASC", quote_identifier("No."))
     } else {
-        ""
+        String::new()
     };
-    let query = format!("SELECT * FROM \"{}\"{}", table_name, order_clause);
+    let query = format!("SELECT * FROM {}{}", quote_identifier(&table_name), order_clause);
     let mut stmt = conn.prepare(&query)
         .map_err(|e| format!("Error al preparar la consulta de datos: {}", e))?;
 

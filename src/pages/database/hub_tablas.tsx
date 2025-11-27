@@ -421,7 +421,7 @@ const InventarioDashboardContent = () => {
 
       <CreateTableModal dbName={dbName} onRefresh={() => setRefreshKey((prev) => prev + 1)} />
 
-      <Toaster position="bottom-center" />
+      <Toaster position="bottom-center" containerStyle={{ zIndex: 99999 }} />
     </div>
   );
 };
