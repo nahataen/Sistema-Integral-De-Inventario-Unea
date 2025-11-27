@@ -1,6 +1,10 @@
+import { useNavigate } from "react-router-dom";
+import { LuArrowLeft } from "react-icons/lu";
 import styles from "./about.module.css";
 
 const AboutPage = () => {
+  const navigate = useNavigate();
+
   //funcion para abrir correo
   const handleCopyEmail = async () => {
     const email = " 0322103855@ut-tijuana.edu.mx";
@@ -17,6 +21,14 @@ const AboutPage = () => {
     <main className={styles.container}>
       <div className={styles.content}>
         <header className={styles.header}>
+          <button
+            onClick={() => navigate(-1)}
+            className={styles.backButton}
+            title="Volver"
+          >
+            <LuArrowLeft size={20} />
+            Volver
+          </button>
           <h1 className={styles.title}>
             Acerca del Sistema de Almacén UNEA
           </h1>
