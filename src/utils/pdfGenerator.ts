@@ -74,7 +74,7 @@ export const generateBulkPDF = async (
   try { logoData = await getLogoData('/unealogo.svg'); } catch (e) { console.warn(e); }
 
   // --- HEADER Y FOOTER ---
-  const drawHeaderAndFooter = (pageIndex: number, totalPages: number) => {
+  const drawHeaderAndFooter = () => {
     // Franjas superiores
     const stripeH = 3;
     setFill(PALETTE.DARK_BLUE);  doc.rect(0, 0, pageWidth / 4, stripeH, 'F');
@@ -106,7 +106,7 @@ export const generateBulkPDF = async (
   for (let i = 0; i < records.length; i++) {
     const rec = records[i];
     if (i > 0) doc.addPage();
-    drawHeaderAndFooter(i + 1, records.length);
+    drawHeaderAndFooter();
 
     let yPos = 40;
 
@@ -158,7 +158,7 @@ export const generateBulkPDF = async (
       // Salto de página
       if (yPos + maxH > pageHeight - 40) {
          doc.addPage();
-         drawHeaderAndFooter(i + 1, records.length);
+         drawHeaderAndFooter();
          yPos = 40;
       }
 
@@ -193,9 +193,9 @@ export const generateBulkPDF = async (
 
         // Checar espacio imagen
         if (yPos + 120 > pageHeight - 40) {
-          doc.addPage();
-          drawHeaderAndFooter(i + 1, records.length);
-          yPos = 40;
+           doc.addPage();
+           drawHeaderAndFooter();
+           yPos = 40;
         }
 
         // Imprimir imagen

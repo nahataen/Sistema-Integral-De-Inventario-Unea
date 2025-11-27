@@ -66,7 +66,6 @@ const TablaSegura: React.FC<ConsultaTablaFrontProps> = memo(({
   const [editData, setEditData] = useState<Record<string, any>>({});
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const [isAddColumnModalOpen, setIsAddColumnModalOpen] = useState(false);
   const [newColumnName, setNewColumnName] = useState('');
@@ -175,7 +174,6 @@ const TablaSegura: React.FC<ConsultaTablaFrontProps> = memo(({
     if (["INPUT", "BUTTON", "TEXTAREA", "SELECT"].includes(tag)) return;
 
     if (index >= 0 && processedRows[index]) {
-      const row = processedRows[index];
       const pk = getRowPK(index);
       if (pk) {
         navigate('/detalles-consultas', {

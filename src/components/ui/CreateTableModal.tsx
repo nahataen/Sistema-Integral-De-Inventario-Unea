@@ -3,7 +3,6 @@ import { createPortal } from 'react-dom';
 import { invoke } from '@tauri-apps/api/tauri';
 import toast from 'react-hot-toast';
 import { useTableCreation } from '../../context';
-import styles from '../../styles/InventarioDashboard.module.css';
 
 interface CreateTableModalProps {
   dbName: string;
