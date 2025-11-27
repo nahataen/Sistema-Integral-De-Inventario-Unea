@@ -19,14 +19,12 @@
     transform: none !important;
     transform-origin: unset !important;
 
-    /* Semi-transparent dark background with blur */
+    /* Semi-transparent dark background without blur */
     background: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
 
-    /* Flexbox for perfect centering */
+    /* Flexbox for top centering */
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
 
     /* Ensure it's above all other content */
@@ -36,8 +34,8 @@
     overflow-y: auto;
     overflow-x: hidden;
 
-    /* Padding to prevent modal from touching edges */
-    padding: 1rem;
+    /* Padding to position modal at top */
+    padding: 2rem 1rem 1rem;
 
     /* Smooth fade-in animation */
     animation: modal-fade-in 0.2s ease-out;

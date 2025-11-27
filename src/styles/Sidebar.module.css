@@ -84,7 +84,7 @@
   border-radius: 12px;
   background: var(--surface-color);
 
-  color: var(--text-secondary-color);
+  color: var(--text-color);
 
   font-size: 1rem;
   font-weight: 500;
@@ -107,7 +107,7 @@
 /* Botón activo */
 .active {
   background: var(--primary-color);
-  color: var(--text-color);
+  color: white;
   font-weight: 600;
   border: 1px solid var(--border-color);
   box-shadow: var(--shadow-light);
@@ -140,7 +140,7 @@
 }
 
 /* SVG icons white in dark mode */
-.icon {
+[data-theme="dark"] .icon {
   filter: brightness(0) invert(1);
 }
 
@@ -173,12 +173,12 @@
 
 /* Indicador verde */
 .dbIndicator {
-  width: 14px;
-  height: 14px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   background: var(--success-color);
-  box-shadow: 0 0 12px 5px var(--success-color),
-              0 0 20px 8px var(--success-hover);
+  box-shadow: 0 0 4px 1px var(--success-color),
+              0 0 8px 3px var(--success-hover);
   animation: pulseGlow 1.8s infinite ease-in-out;
 }
 

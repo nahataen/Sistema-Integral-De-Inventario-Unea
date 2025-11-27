@@ -52,10 +52,14 @@ const TableCard: React.FC<TableCardProps> = ({
       }}
       onClick={() => onEdit(table.name)}
       onMouseEnter={(e) => {
-        e.currentTarget.style.transform = 'translateY(-4px)';
+        e.currentTarget.style.transform = 'scale(1.02)';
+        e.currentTarget.style.outline = 'none';
+        e.currentTarget.style.borderColor = 'transparent';
       }}
       onMouseLeave={(e) => {
         e.currentTarget.style.transform = 'translateY(0)';
+        e.currentTarget.style.outline = '';
+        e.currentTarget.style.borderColor = '';
       }}
     >
       {/* Área para mostrar la imagen o un placeholder */}
@@ -130,7 +134,6 @@ const TableCard: React.FC<TableCardProps> = ({
             onUploadImage(table.name);
           }}
           disabled={uploadingImage === table.name}
-          className="glass-button"
           style={{
             width: '100%',
             marginBottom: '12px',
@@ -219,18 +222,21 @@ const TableCard: React.FC<TableCardProps> = ({
             }}
             style={{
               flex: 1,
-              color: 'var(--primary-color)',
-              background: 'none',
-              border: 'none',
+              background: 'var(--primary-color)',
+              color: 'white',
+              border: '1px solid var(--border-color)',
+              borderRadius: '6px',
+              padding: '6px 8px',
               cursor: 'pointer',
               transition: 'all 0.2s ease',
-              textDecoration: 'underline'
+              fontSize: '12px',
+              fontWeight: '600'
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.color = 'var(--accent-color)';
+              e.currentTarget.style.transform = 'scale(1.05)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.color = 'var(--primary-color)';
+              e.currentTarget.style.transform = 'scale(1)';
             }}
           >
             Editar
@@ -242,18 +248,21 @@ const TableCard: React.FC<TableCardProps> = ({
             }}
             style={{
               flex: 1,
-              color: 'var(--success-color)',
-              background: 'none',
-              border: 'none',
+              background: 'var(--success-color)',
+              color: 'white',
+              border: '1px solid var(--border-color)',
+              borderRadius: '6px',
+              padding: '6px 8px',
               cursor: 'pointer',
               transition: 'all 0.2s ease',
-              textDecoration: 'underline'
+              fontSize: '12px',
+              fontWeight: '600'
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.color = 'var(--success-hover)';
+              e.currentTarget.style.transform = 'scale(1.05)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.color = 'var(--success-color)';
+              e.currentTarget.style.transform = 'scale(1)';
             }}
           >
             Exportar
@@ -265,18 +274,21 @@ const TableCard: React.FC<TableCardProps> = ({
             }}
             style={{
               flex: 1,
-              color: 'var(--danger-color)',
-              background: 'none',
-              border: 'none',
+              background: 'var(--danger-color)',
+              color: 'white',
+              border: '1px solid var(--border-color)',
+              borderRadius: '6px',
+              padding: '6px 8px',
               cursor: 'pointer',
               transition: 'all 0.2s ease',
-              textDecoration: 'underline'
+              fontSize: '12px',
+              fontWeight: '600'
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.color = 'var(--danger-hover)';
+              e.currentTarget.style.transform = 'scale(1.05)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.color = 'var(--danger-color)';
+              e.currentTarget.style.transform = 'scale(1)';
             }}
           >
             Borrar

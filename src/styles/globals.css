@@ -193,6 +193,15 @@ code {
   outline-offset: 2px;
 }
 
+/* Button focus override */
+button:focus {
+  outline: none;
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
 /* Button reset */
 button {
   font-family: inherit;

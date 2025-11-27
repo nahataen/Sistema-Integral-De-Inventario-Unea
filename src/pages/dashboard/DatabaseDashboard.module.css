@@ -83,11 +83,6 @@
   transition: all 0.3s ease;
 }
 
-.card:hover {
-  box-shadow: 0 12px 40px var(--shadow-color), 0 0 20px var(--accent-color);
-  transform: translateY(-2px);
-}
-
 .loading {
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   display: grid;

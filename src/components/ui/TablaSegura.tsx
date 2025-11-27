@@ -3,13 +3,14 @@ import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { invoke } from '@tauri-apps/api/tauri';
 import toast from 'react-hot-toast';
+import { LuTrash2, LuPencil, LuPlus, LuX, LuSave } from 'react-icons/lu';
 import "../../styles/tabla.css";
 
 // =========================================
 // Tipos y Constantes
 // =========================================
 
-const PROTECTED_COLUMNS = ["ID", "Zona", "Campus"];
+const PROTECTED_COLUMNS = ["ID", "Zona", "Campus", "No", "NO", "no", "No.", "NO.", "no."];
 
 interface TableData {
   table_name: string;
@@ -289,7 +290,8 @@ const TablaSegura: React.FC<ConsultaTablaFrontProps> = memo(({
                     disabled={selectedRowId === null || selectedRowId < 0}
                     onClick={() => setShowDeleteModal(true)}
                   >
-                    🗑️ Eliminar Fila
+                    <LuTrash2 size={16} />
+                    Eliminar Fila
                   </button>
                   <button
                     className="dark-grid-btn dark-grid-btn-edit"
@@ -301,28 +303,33 @@ const TablaSegura: React.FC<ConsultaTablaFrontProps> = memo(({
                       }
                     }}
                   >
-                    ✏️ Editar Fila
+                    <LuPencil size={16} />
+                    Editar Fila
                   </button>
                   <button
                     className="dark-grid-btn dark-grid-btn-add-column"
                     onClick={() => setIsAddColumnModalOpen(true)}
                   >
-                    ➕ Añadir Columna
+                    <LuPlus size={16} />
+                    Añadir Columna
                   </button>
                   <button
                     className="dark-grid-btn dark-grid-btn-create"
                     onClick={() => navigate('/create-record', { state: { dbName, tableName } })}
                   >
-                    ➕ Nuevo Registro
+                    <LuPlus size={16} />
+                    Nuevo Registro
                   </button>
                 </>
               ) : (
                 <>
                   <button className="dark-grid-btn dark-grid-btn-cancel" onClick={handleCancelEdit}>
-                    ❌ Cancelar
+                    <LuX size={16} />
+                    Cancelar
                   </button>
                   <button className="dark-grid-btn dark-grid-btn-save" onClick={handleSaveEdit}>
-                    💾 Guardar
+                    <LuSave size={16} />
+                    Guardar
                   </button>
                 </>
               )}
@@ -462,7 +469,7 @@ const TablaSegura: React.FC<ConsultaTablaFrontProps> = memo(({
         <div className="modal-overlay">
           <div className="modal-container">
             <div className="modal-header">
-              <h3>➕ Añadir Nueva Columna</h3>
+              <h3><LuPlus size={20} style={{ marginRight: '0.5rem' }} /> Añadir Nueva Columna</h3>
             </div>
             <div className="modal-body">
               <div className="modal-form-group">

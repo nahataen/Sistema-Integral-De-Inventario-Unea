@@ -87,9 +87,9 @@
   padding: 0.625rem 1rem;
   font-size: 0.875rem;
   font-weight: 500;
-  border-radius: var(--dg-radius);
+  border-radius: 0.5rem;
   border: 1px solid var(--border-color);
-  color: var(--text-color);
+  color: white;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   display: inline-flex;
@@ -110,41 +110,73 @@
 }
 
 /* Variantes de Botones */
+
+/* Primary Action - Most prominent */
+.dark-grid-btn-create {
+  background: var(--dg-success);
+  color: white;
+  font-weight: 600;
+  padding: 0.75rem 1.25rem;
+  font-size: 0.9rem;
+  border: none;
+  box-shadow: 0 2px 4px rgba(76, 175, 80, 0.3);
+}
+
+.dark-grid-btn-create:hover:not(:disabled) {
+  background: var(--dg-success-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(76, 175, 80, 0.4);
+}
+
+/* Secondary Actions - Outline style */
+.dark-grid-btn-edit,
+.dark-grid-btn-add-column {
+  background: transparent;
+  border: 2px solid var(--dg-primary);
+  color: var(--dg-primary);
+  font-weight: 500;
+}
+
+.dark-grid-btn-edit:hover:not(:disabled),
+.dark-grid-btn-add-column:hover:not(:disabled) {
+  background: var(--dg-primary);
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(25, 118, 210, 0.3);
+}
+
+/* Danger Action - Solid but less prominent */
 .dark-grid-btn-delete {
   background: var(--dg-danger);
-  color: var(--text-color);
+  color: white;
+  border: none;
+  opacity: 0.9;
 }
 
 .dark-grid-btn-delete:hover:not(:disabled) {
   background: var(--dg-danger-hover);
-  box-shadow: var(--shadow-light);
+  opacity: 1;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(244, 67, 54, 0.3);
 }
 
-.dark-grid-btn-edit {
-  background: var(--dg-primary);
-  color: var(--text-color);
-}
-
-.dark-grid-btn-edit:hover:not(:disabled) {
-  background: var(--dg-primary-hover);
-  box-shadow: var(--shadow-light);
-}
-
-.dark-grid-btn-create,
+/* Save button */
 .dark-grid-btn-save {
   background: var(--dg-success);
-  color: var(--text-color);
+  color: white;
+  border: none;
 }
 
-.dark-grid-btn-create:hover:not(:disabled),
 .dark-grid-btn-save:hover:not(:disabled) {
   background: var(--dg-success-hover);
-  box-shadow: var(--shadow-light);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(76, 175, 80, 0.3);
 }
 
+/* Cancel button */
 .dark-grid-btn-cancel {
   background: transparent;
-  border: 1px solid var(--dg-neutral);
+  border: 2px solid var(--dg-neutral);
   color: var(--dg-text-secondary);
 }
 
@@ -152,6 +184,7 @@
   background: var(--surface-color);
   color: var(--dg-text-primary);
   border-color: var(--text-secondary-color);
+  transform: translateY(-1px);
 }
 
 /* --- Viewport & Scrollbars --- */
@@ -329,725 +362,307 @@
   color: var(--dg-danger);
   font-style: normal;
   background: rgba(239, 68, 68, 0.1);
+  border-radius: var(--dg-radius);
+  padding: 1rem;
+}
 
-  .dark-grid-btn-delete:hover:not(:disabled) {
-    background: var(--dg-danger-hover);
-    box-shadow: var(--shadow-light);
+/* --- Modals --- */
+.dark-grid-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.dark-grid-modal {
+  background: var(--surface-color);
+  border-radius: var(--dg-radius-lg);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--dg-shadow);
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.dark-grid-modal-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--dg-border);
+  background: var(--dg-bg-header);
+}
+
+.dark-grid-modal-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--dg-text-primary);
+}
+
+.dark-grid-modal-body {
+  padding: 1.5rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.dark-grid-modal-footer {
+  padding: 1.5rem;
+  border-top: 1px solid var(--dg-border);
+  background: var(--dg-bg-header);
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+}
+
+/* --- Add Column Modal Specifics --- */
+.add-column-modal {
+  background: var(--surface-color);
+  border-radius: 1rem;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  margin: auto;
+  /* Critical for centering */
+  position: relative;
+  z-index: 100000;
+  overflow: hidden;
+  animation: scaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.add-column-title {
+  margin: 0;
+  padding: 1.25rem 1.5rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-color);
+  border-bottom: 1px solid var(--border-color);
+  background: var(--surface-color);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.add-column-body {
+  padding: 1.5rem 2rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.add-column-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-secondary-color);
+  margin-bottom: 0.25rem;
+}
+
+.form-input,
+.form-select {
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  background: var(--surface-color);
+  color: var(--text-color);
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.form-input:focus,
+.form-select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.add-column-footer {
+  padding: 1.25rem 1.5rem;
+  border-top: 1px solid var(--border-color);
+  background: var(--surface-color);
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+
+.btn-cancel,
+.btn-save {
+  padding: 0.625rem 1.25rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-cancel {
+  background: var(--text-secondary-color);
+  color: var(--text-color);
+}
+
+.btn-cancel:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+.btn-save {
+  background: var(--success-color);
+  color: white;
+}
+
+.btn-save:hover:not(:disabled) {
+  background: var(--success-hover);
+  transform: translateY(-1px);
+}
+
+.btn-save:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* --- Animaciones Keyframes --- */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
   }
 
-  .dark-grid-btn-edit {
-    background: var(--dg-primary);
-    color: var(--text-color);
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleUp {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
   }
 
-  .dark-grid-btn-edit:hover:not(:disabled) {
-    background: var(--dg-primary-hover);
-    box-shadow: var(--shadow-light);
+  to {
+    opacity: 1;
+    transform: scale(1);
   }
+}
 
-  .dark-grid-btn-create,
-  .dark-grid-btn-save {
-    background: var(--dg-success);
-    color: var(--text-color);
-  }
-
-  .dark-grid-btn-create:hover:not(:disabled),
-  .dark-grid-btn-save:hover:not(:disabled) {
-    background: var(--dg-success-hover);
-    box-shadow: var(--shadow-light);
-  }
-
-  .dark-grid-btn-cancel {
-    background: transparent;
-    border: 1px solid var(--dg-neutral);
-    color: var(--dg-text-secondary);
-  }
-
-  .dark-grid-btn-cancel:hover:not(:disabled) {
-    background: var(--surface-color);
-    color: var(--dg-text-primary);
-    border-color: var(--text-secondary-color);
-  }
-
-  /* --- Viewport & Scrollbars --- */
-  .dark-grid-viewport {
-    max-height: calc(100vh - 500px);
-    /* Un poco más de espacio */
-    overflow: auto;
-    width: 100%;
-    background: var(--dg-bg-surface);
-  }
-
-  /* Scrollbar Moderno */
-  .dark-grid-viewport::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
-  }
-
-  .dark-grid-viewport::-webkit-scrollbar-track {
-    background: var(--dg-bg-surface);
-  }
-
-  .dark-grid-viewport::-webkit-scrollbar-thumb {
-    background: var(--dg-border);
-    border: 3px solid var(--dg-bg-surface);
-    /* Efecto flotante */
-    border-radius: 10px;
-  }
-
-  .dark-grid-viewport::-webkit-scrollbar-thumb:hover {
-    background: var(--dg-border-light);
-  }
-
-  .dark-grid-viewport::-webkit-scrollbar-corner {
-    background: var(--dg-bg-surface);
-  }
-
-  /* --- La Tabla (Grid) --- */
-  .dark-grid-grid {
-    width: 100%;
-    border-collapse: separate;
-    /* Necesario para sticky headers limpios */
-    border-spacing: 0;
-    font-size: 0.875rem;
-  }
-
-  /* 1. Actualizamos los Encabezados (TH) */
-  .dark-grid-th {
+/* --- Responsive --- */
+@media (max-width: 768px) {
+  .dark-grid-overlay {
     padding: 1rem;
-    text-align: left;
-    font-weight: 600;
-    color: var(--dg-text-secondary);
-    background: var(--dg-bg-header);
-
-    /* BORDES */
-    border-bottom: 1px solid var(--dg-border);
-    border-right: 1px solid var(--dg-border);
-    /* <--- Nueva línea vertical */
-
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    white-space: nowrap;
-    text-transform: uppercase;
-    font-size: 0.75rem;
-    letter-spacing: 0.05em;
   }
 
-  /* Quitamos el borde derecho del último encabezado para que no se duplique con el borde del contenedor */
-  .dark-grid-th:last-child {
-    border-right: none;
-  }
-
-  .dark-grid-th-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  .dark-grid-th-delete {
-    color: var(--dg-text-secondary);
-    transition: all 0.2s;
-    cursor: pointer;
-    background: transparent;
-    border: 1px solid transparent;
-    border-radius: 0.25rem;
-    padding: 0.125rem 0.25rem;
-    font-size: 0.75rem;
-    font-weight: bold;
-    line-height: 1;
-    min-width: 1.25rem;
-    text-align: center;
-  }
-
-  .dark-grid-th-delete:hover {
-    color: white;
-    background: var(--dg-danger);
-    border-color: var(--dg-danger);
-    transform: scale(1.1);
-  }
-
-  /* Filas y Celdas */
-  .dark-grid-tr {
-    transition: background-color 0.15s ease;
-  }
-
-  .dark-grid-tr:hover {
-    background: var(--dg-border);
-  }
-
-  /* Selección: Usamos un tinte sutil en lugar de color sólido */
-  .dark-grid-tr-selected {
-    background: var(--dg-selected-bg) !important;
-  }
-
-  .dark-grid-tr-selected .dark-grid-td:first-child {
-    box-shadow: inset 3px 0 0 var(--dg-selected-border);
-  }
-
-  /* Quitamos el borde derecho de la última celda */
-  .dark-grid-td:last-child {
-    border-right: none;
-  }
-
-  .dark-grid-tr-editing {
-    background: rgba(245, 124, 0, 0.1) !important;
-    /* Naranja muy sutil */
-    box-shadow: inset 3px 0 0 var(--warning-color);
-  }
-
-  /* 2. Actualizamos las Celdas (TD) */
-  .dark-grid-td {
-    padding: 0.875rem 1rem;
-    color: var(--dg-text-primary);
-
-    /* BORDES */
-    border-bottom: 1px solid var(--dg-border);
-    border-right: 1px solid var(--dg-border);
-    /* <--- Nueva línea vertical */
-
-    vertical-align: middle;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 250px;
-  }
-
-  /* --- Inputs --- */
-  .dark-grid-input {
-    width: 100%;
-    padding: 0.5rem 0.75rem;
-    background: var(--dg-bg-main);
-    border: 1px solid var(--dg-border-light);
-    border-radius: 0.375rem;
-    color: var(--dg-text-primary);
-    font-size: 0.875rem;
-    transition: border-color 0.2s, box-shadow 0.2s;
-  }
-
-  .dark-grid-input:focus {
-    outline: none;
-    border-color: var(--dg-primary);
-    box-shadow: 0 0 0 2px var(--primary-color);
-  }
-
-  /* --- Mensajes --- */
-  .dark-grid-message {
-    text-align: center;
-    padding: 3rem 1rem;
-    color: var(--dg-text-secondary);
-    font-style: italic;
-  }
-
-  .dark-grid-message-error {
-    color: var(--dg-danger);
-    font-style: normal;
-    background: rgba(239, 68, 68, 0.1);
-    border-radius: var(--dg-radius);
-    background: var(--dg-danger-hover);
-    box-shadow: var(--shadow-light);
-  }
-
-  .dark-grid-btn-edit {
-    background: var(--dg-primary);
-    color: var(--text-color);
-  }
-
-  .dark-grid-btn-edit:hover:not(:disabled) {
-    background: var(--dg-primary-hover);
-    box-shadow: var(--shadow-light);
-  }
-
-  .dark-grid-btn-create,
-  .dark-grid-btn-save {
-    background: var(--dg-success);
-    color: var(--text-color);
-  }
-
-  .dark-grid-btn-create:hover:not(:disabled),
-  .dark-grid-btn-save:hover:not(:disabled) {
-    background: var(--dg-success-hover);
-    box-shadow: var(--shadow-light);
-  }
-
-  .dark-grid-btn-cancel {
-    background: transparent;
-    border: 1px solid var(--dg-neutral);
-    color: var(--dg-text-secondary);
-  }
-
-  .dark-grid-btn-cancel:hover:not(:disabled) {
-    background: var(--surface-color);
-    color: var(--dg-text-primary);
-    border-color: var(--text-secondary-color);
-  }
-
-  /* --- Viewport & Scrollbars --- */
-  .dark-grid-viewport {
-    max-height: calc(100vh - 500px);
-    /* Un poco más de espacio */
-    overflow: auto;
-    width: 100%;
-    background: var(--dg-bg-surface);
-  }
-
-  /* Scrollbar Moderno */
-  .dark-grid-viewport::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
-  }
-
-  .dark-grid-viewport::-webkit-scrollbar-track {
-    background: var(--dg-bg-surface);
-  }
-
-  .dark-grid-viewport::-webkit-scrollbar-thumb {
-    background: var(--dg-border);
-    border: 3px solid var(--dg-bg-surface);
-    /* Efecto flotante */
-    border-radius: 10px;
-  }
-
-  .dark-grid-viewport::-webkit-scrollbar-thumb:hover {
-    background: var(--dg-border-light);
-  }
-
-  .dark-grid-viewport::-webkit-scrollbar-corner {
-    background: var(--dg-bg-surface);
-  }
-
-  /* --- La Tabla (Grid) --- */
-  .dark-grid-grid {
-    width: 100%;
-    border-collapse: separate;
-    /* Necesario para sticky headers limpios */
-    border-spacing: 0;
-    font-size: 0.875rem;
-  }
-
-  /* 1. Actualizamos los Encabezados (TH) */
-  .dark-grid-th {
-    padding: 1rem;
-    text-align: left;
-    font-weight: 600;
-    color: var(--dg-text-secondary);
-    background: var(--dg-bg-header);
-
-    /* BORDES */
-    border-bottom: 1px solid var(--dg-border);
-    border-right: 1px solid var(--dg-border);
-    /* <--- Nueva línea vertical */
-
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    white-space: nowrap;
-    text-transform: uppercase;
-    font-size: 0.75rem;
-    letter-spacing: 0.05em;
-  }
-
-  /* Quitamos el borde derecho del último encabezado para que no se duplique con el borde del contenedor */
-  .dark-grid-th:last-child {
-    border-right: none;
-  }
-
-  .dark-grid-th-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  .dark-grid-th-delete {
-    color: var(--dg-text-secondary);
-    transition: all 0.2s;
-    cursor: pointer;
-    background: transparent;
-    border: 1px solid transparent;
-    border-radius: 0.25rem;
-    padding: 0.125rem 0.25rem;
-    font-size: 0.75rem;
-    font-weight: bold;
-    line-height: 1;
-    min-width: 1.25rem;
-    text-align: center;
-  }
-
-  .dark-grid-th-delete:hover {
-    color: white;
-    background: var(--dg-danger);
-    border-color: var(--dg-danger);
-    transform: scale(1.1);
-  }
-
-  /* Filas y Celdas */
-  .dark-grid-tr {
-    transition: background-color 0.15s ease;
-  }
-
-  .dark-grid-tr:hover {
-    background: var(--dg-border);
-  }
-
-  /* Selección: Usamos un tinte sutil en lugar de color sólido */
-  .dark-grid-tr-selected {
-    background: var(--dg-selected-bg) !important;
-  }
-
-  .dark-grid-tr-selected .dark-grid-td:first-child {
-    box-shadow: inset 3px 0 0 var(--dg-selected-border);
-  }
-
-  /* Quitamos el borde derecho de la última celda */
-  .dark-grid-td:last-child {
-    border-right: none;
-  }
-
-  .dark-grid-tr-editing {
-    background: rgba(245, 124, 0, 0.1) !important;
-    /* Naranja muy sutil */
-    box-shadow: inset 3px 0 0 var(--warning-color);
-  }
-
-  /* 2. Actualizamos las Celdas (TD) */
-  .dark-grid-td {
-    padding: 0.875rem 1rem;
-    color: var(--dg-text-primary);
-
-    /* BORDES */
-    border-bottom: 1px solid var(--dg-border);
-    border-right: 1px solid var(--dg-border);
-    /* <--- Nueva línea vertical */
-
-    vertical-align: middle;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 250px;
-  }
-
-  /* --- Inputs --- */
-  .dark-grid-input {
-    width: 100%;
-    padding: 0.5rem 0.75rem;
-    background: var(--dg-bg-main);
-    border: 1px solid var(--dg-border-light);
-    border-radius: 0.375rem;
-    color: var(--dg-text-primary);
-    font-size: 0.875rem;
-    transition: border-color 0.2s, box-shadow 0.2s;
-  }
-
-  .dark-grid-input:focus {
-    outline: none;
-    text-align: center;
-  }
-
-  .dark-grid-message-container,
-  .dark-grid-form-container {
-    margin: 1rem 0;
-  }
-
-  .dark-grid-form-container label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 600;
-    color: var(--dg-text-secondary);
-    text-align: left;
-  }
-
-  .dark-grid-form-container input,
-  .dark-grid-form-container select {
-    margin-bottom: 1rem;
-    width: 100%;
-  }
-
-  .dark-grid-message-container p {
-    font-size: 1rem;
-    line-height: 1.6;
-    color: var(--dg-text-primary);
-    margin: 0;
-    word-wrap: break-word;
-    background: var(--dg-bg-surface);
-    border-radius: 0.5rem;
-    border: 1px solid var(--dg-border);
-    padding: 1rem;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  }
-
-  .dark-grid-modal-body strong {
-    color: var(--dg-danger);
-    font-weight: 700;
-    background: rgba(239, 68, 68, 0.1);
-    padding: 0.125rem 0.25rem;
-    border-radius: 0.25rem;
-    border: 1px solid rgba(239, 68, 68, 0.2);
-  }
-
-  .dark-grid-modal-footer {
-    padding: 1.25rem 1.5rem;
-    border-top: 1px solid var(--dg-border);
-    background: var(--dg-bg-surface);
-    display: flex;
-    justify-content: flex-end;
-    gap: 1rem;
-    flex-shrink: 0;
-  }
-
-  /* --- Add Column Modal Specifics --- */
-  .add-column-modal {
-    background: var(--surface-color);
-    border-radius: 1rem;
-    border: 1px solid var(--border-color);
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-    width: 100%;
-    max-width: 500px;
-    max-height: 90vh;
-    display: flex;
+  .dark-grid-toolbar {
     flex-direction: column;
-    margin: auto;
-    /* Critical for centering */
-    position: relative;
-    z-index: 100000;
-    overflow: hidden;
-    animation: scaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    gap: 1rem;
+    align-items: stretch;
   }
 
-  .add-column-title {
-    margin: 0;
-    padding: 1.25rem 1.5rem;
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: var(--text-color);
-    border-bottom: 1px solid var(--border-color);
-    background: var(--surface-color);
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    flex-shrink: 0;
+  .dark-grid-actions {
+    justify-content: stretch;
   }
 
-  .add-column-body {
-    padding: 1.5rem 2rem;
-    overflow-y: auto;
+  .dark-grid-btn {
     flex: 1;
   }
 
-  .add-column-form {
-    display: flex;
-    flex-direction: column;
-    gap: 1.25rem;
+  .dark-grid-th,
+  .dark-grid-td {
+    padding: 0.75rem;
+    font-size: 0.8rem;
   }
 
-  .form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+  /* Modal adjustments for tablets/mobile */
+  .dark-grid-modal,
+  .add-column-modal {
+    max-width: 95vw;
+    max-height: 85vh;
   }
 
-  .form-label {
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--text-secondary-color);
-    margin-bottom: 0.25rem;
+  .dark-grid-modal h3,
+  .add-column-title {
+    padding: 1rem 1.25rem;
+    font-size: 1.125rem;
   }
 
-  .form-input,
-  .form-select {
-    padding: 0.75rem 1rem;
-    border: 1px solid var(--border-color);
-    border-radius: 0.5rem;
-    background: var(--surface-color);
-    color: var(--text-color);
-    font-size: 1rem;
-    transition: all 0.2s ease;
-    width: 100%;
-    box-sizing: border-box;
+  .dark-grid-modal-body,
+  .add-column-body {
+    padding: 1.25rem;
   }
 
-  .form-input:focus,
-  .form-select:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-  }
-
+  .dark-grid-modal-footer,
   .add-column-footer {
-    padding: 1.25rem 1.5rem;
-    border-top: 1px solid var(--border-color);
-    background: var(--surface-color);
-    display: flex;
-    justify-content: flex-end;
-    gap: 1rem;
-    flex-shrink: 0;
+    padding: 1rem 1.25rem;
+    flex-direction: column-reverse;
+    /* Stack buttons on mobile */
+    gap: 0.75rem;
   }
 
+  /* Ensure buttons are full width on mobile in footer */
+  .dark-grid-modal-footer button,
+  .add-column-footer button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .dark-grid-overlay {
+    padding: 0.5rem;
+  }
+
+  .dark-grid-modal,
+  .add-column-modal {
+    width: 100%;
+    max-width: 100%;
+    border-radius: 0.75rem;
+    max-height: 90vh;
+  }
+
+  .dark-grid-modal-body,
+  .add-column-body {
+    padding: 1rem;
+  }
+
+  .dark-grid-modal-footer,
+  .add-column-footer {
+    padding: 1rem;
+    flex-direction: column;
+    /* Stack buttons on very small screens */
+    gap: 0.75rem;
+  }
+
+  .dark-grid-modal h3,
+  .add-column-title {
+    padding: 1rem;
+    font-size: 1rem;
+  }
+
+  .dark-grid-btn,
   .btn-cancel,
   .btn-save {
-    padding: 0.625rem 1.25rem;
-    font-size: 0.9rem;
-    font-weight: 600;
-    border-radius: 0.5rem;
-    border: 1px solid var(--border-color);
-    cursor: pointer;
-    transition: all 0.2s ease;
+    width: 100%;
+    justify-content: center;
   }
-
-  .btn-cancel {
-    background: var(--text-secondary-color);
-    color: var(--text-color);
-  }
-
-  .btn-cancel:hover {
-    filter: brightness(1.1);
-    transform: translateY(-1px);
-  }
-
-  .btn-save {
-    background: var(--success-color);
-    color: white;
-  }
-
-  .btn-save:hover:not(:disabled) {
-    background: var(--success-hover);
-    transform: translateY(-1px);
-  }
-
-  .btn-save:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
-  /* --- Animaciones Keyframes --- */
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-    }
-
-    to {
-      opacity: 1;
-    }
-  }
-
-  @keyframes scaleUp {
-    from {
-      opacity: 0;
-      transform: scale(0.95);
-    }
-
-    to {
-      opacity: 1;
-      transform: scale(1);
-    }
-  }
-
-  /* Light mode button text colors */
-  [data-theme="light"] .dark-grid-btn-delete,
-  [data-theme="light"] .dark-grid-btn-edit,
-  [data-theme="light"] .dark-grid-btn-create,
-  [data-theme="light"] .dark-grid-btn-save,
-  [data-theme="light"] .dark-grid-btn-add-column {
-    color: white;
-  }
-
-  /* --- Responsive --- */
-  @media (max-width: 768px) {
-    .dark-grid-overlay {
-      padding: 1rem;
-    }
-
-    .dark-grid-toolbar {
-      flex-direction: column;
-      gap: 1rem;
-      align-items: stretch;
-    }
-
-    .dark-grid-actions {
-      justify-content: stretch;
-    }
-
-    .dark-grid-btn {
-      flex: 1;
-    }
-
-    .dark-grid-th,
-    .dark-grid-td {
-      padding: 0.75rem;
-      font-size: 0.8rem;
-    }
-
-    /* Modal adjustments for tablets/mobile */
-    .dark-grid-modal,
-    .add-column-modal {
-      max-width: 95vw;
-      max-height: 85vh;
-    }
-
-    .dark-grid-modal h3,
-    .add-column-title {
-      padding: 1rem 1.25rem;
-      font-size: 1.125rem;
-    }
-
-    .dark-grid-modal-body,
-    .add-column-body {
-      padding: 1.25rem;
-    }
-
-    .dark-grid-modal-footer,
-    .add-column-footer {
-      padding: 1rem 1.25rem;
-      flex-direction: column-reverse;
-      /* Stack buttons on mobile */
-      gap: 0.75rem;
-    }
-
-    /* Ensure buttons are full width on mobile in footer */
-    .dark-grid-modal-footer button,
-    .add-column-footer button {
-      width: 100%;
-      justify-content: center;
-    }
-  }
-
-  @media (max-width: 480px) {
-    .dark-grid-overlay {
-      padding: 0.5rem;
-    }
-
-    .dark-grid-modal,
-    .add-column-modal {
-      width: 100%;
-      max-width: 100%;
-      border-radius: 0.75rem;
-      max-height: 90vh;
-    }
-
-    .dark-grid-modal-body,
-    .add-column-body {
-      padding: 1rem;
-    }
-
-    .dark-grid-modal-footer,
-    .add-column-footer {
-      padding: 1rem;
-      flex-direction: column;
-      /* Stack buttons on very small screens */
-      gap: 0.75rem;
-    }
-
-    .dark-grid-modal h3,
-    .add-column-title {
-      padding: 1rem;
-      font-size: 1rem;
-    }
-
-    .dark-grid-btn,
-    .btn-cancel,
-    .btn-save {
-      width: 100%;
-      justify-content: center;
-    }
-  }
+}

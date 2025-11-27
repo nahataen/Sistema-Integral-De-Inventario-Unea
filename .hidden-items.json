@@ -1,4 +1,105 @@
 {
   "version": "1.0.0",
-  "hiddenItems": []
+  "hiddenItems": [
+    {
+      "path": "c:\\Users\\nahat\\Desktop\\Sistema-Almacen-Unea\\sistema-almacen-unea\\.kilocode",
+      "name": ".kilocode",
+      "type": "folder",
+      "workspaceFolder": "c:\\Users\\nahat\\Desktop\\Sistema-Almacen-Unea\\sistema-almacen-unea",
+      "children": [
+        "c:\\Users\\nahat\\Desktop\\Sistema-Almacen-Unea\\sistema-almacen-unea\\.kilocode\\mcp.json"
+      ]
+    },
+    {
+      "path": "c:\\Users\\nahat\\Desktop\\Sistema-Almacen-Unea\\sistema-almacen-unea\\.qodo",
+      "name": ".qodo",
+      "type": "folder",
+      "workspaceFolder": "c:\\Users\\nahat\\Desktop\\Sistema-Almacen-Unea\\sistema-almacen-unea",
+      "children": [
+        "c:\\Users\\nahat\\Desktop\\Sistema-Almacen-Unea\\sistema-almacen-unea\\.qodo\\agents",
+        "c:\\Users\\nahat\\Desktop\\Sistema-Almacen-Unea\\sistema-almacen-unea\\.qodo\\workflows"
+      ]
+    },
+    {
+      "path": "c:\\Users\\nahat\\Desktop\\Sistema-Almacen-Unea\\sistema-almacen-unea\\dist",
+      "name": "dist",
+      "type": "folder",
+      "workspaceFolder": "c:\\Users\\nahat\\Desktop\\Sistema-Almacen-Unea\\sistema-almacen-unea",
+      "children": [
+        "c:\\Users\\nahat\\Desktop\\Sistema-Almacen-Unea\\sistema-almacen-unea\\dist\\assets",
+        "c:\\Users\\nahat\\Desktop\\Sistema-Almacen-Unea\\sistema-almacen-unea\\dist\\index.html",
+        "c:\\Users\\nahat\\Desktop\\Sistema-Almacen-Unea\\sistema-almacen-unea\\dist\\unealogo.svg",
+        "c:\\Users\\nahat\\Desktop\\Sistema-Almacen-Unea\\sistema-almacen-unea\\dist\\vite.svg",
+        "c:\\Users\\nahat\\Desktop\\Sistema-Almacen-Unea\\sistema-almacen-unea\\dist\\assets\\about-DSz8U0BL.js",
+        "c:\\Users\\nahat\\Desktop\\Sistema-Almacen-Unea\\sistema-almacen-unea\\dist\\assets\\about-DtqqNL2o.css",
+        "c:\\Users\\nahat\\Desktop\\Sistema-Almacen-Unea\\sistema-almacen-unea\\dist\\assets\\Configuracion--DXlulxq.js",
+        "c:\\Users\\nahat\\Desktop\\Sistema-Almacen-Unea\\sistema-almacen-unea\\dist\\assets\\Configuracion-DYXdnIH-.css",
+        "c:\\Users\\nahat\\Desktop\\Sistema-Almacen-Unea\\sistema-almacen-unea\\dist\\assets\\DatabaseDashboard-B-attcKf.css",
+        "c:\\Users\\nahat\\Desktop\\Sistema-Almacen-Unea\\sistema-almacen-unea\\dist\\assets\\DatabaseDashboard-DreJbfKH.js",
+        "c:\\Users\\nahat\\Desktop\\Sistema-Almacen-Unea\\sistema-almacen-unea\\dist\\assets\\editar_fila-BEWq45bh.js",
+        "c:\\Users\\nahat\\Desktop\\Sistema-Almacen-Unea\\sistema-almacen-unea\\dist\\assets\\editar_fila-yp5AcdKq.css",
+        "c:\\Users\\nahat\\Desktop\\Sistema-Almacen-Unea\\sistema-almacen-unea\\dist\\assets\\fs-Cuw-L7Ln.css",
+        "c:\\Users\\nahat\\Desktop\\Sistema-Almacen-Unea\\sistema-almacen-unea\\dist\\assets\\fs-IK3o-fAA.js",
+        "c:\\Users\\nahat\\Desktop\\Sistema-Almacen-Unea\\sistema-almacen-unea\\dist\\assets\\hub_tablas-BTfbkr70.js",
+        "c:\\Users\\nahat\\Desktop\\Sistema-Almacen-Unea\\sistema-almacen-unea\\dist\\assets\\hub_tablas-BvgZg25V.css",
+        "c:\\Users\\nahat\\Desktop\\Sistema-Almacen-Unea\\sistema-almacen-unea\\dist\\assets\\index-BCa53nJb.js",
+        "c:\\Users\\nahat\\Desktop\\Sistema-Almacen-Unea\\sistema-almacen-unea\\dist\\assets\\index-D4b6HGP7.css",
+        "c:\\Users\\nahat\\Desktop\\Sistema-Almacen-Unea\\sistema-almacen-unea\\dist\\assets\\pagina-4Rds67FD.css",
+        "c:\\Users\\nahat\\Desktop\\Sistema-Almacen-Unea\\sistema-almacen-unea\\dist\\assets\\pagina-VMZv2QOW.js",
+        "c:\\Users\\nahat\\Desktop\\Sistema-Almacen-Unea\\sistema-almacen-unea\\dist\\assets\\tauri-DIYpJVkr.js"
+      ]
+    },
+    {
+      "path": "c:\\Users\\nahat\\Desktop\\Sistema-Almacen-Unea\\sistema-almacen-unea\\docs",
+      "name": "docs",
+      "type": "folder",
+      "workspaceFolder": "c:\\Users\\nahat\\Desktop\\Sistema-Almacen-Unea\\sistema-almacen-unea",
+      "children": [
+        "c:\\Users\\nahat\\Desktop\\Sistema-Almacen-Unea\\sistema-almacen-unea\\docs\\hub_tablas.md"
+      ]
+    },
+    {
+      "path": "c:\\Users\\nahat\\Desktop\\Sistema-Almacen-Unea\\sistema-almacen-unea\\public",
+      "name": "public",
+      "type": "folder",
+      "workspaceFolder": "c:\\Users\\nahat\\Desktop\\Sistema-Almacen-Unea\\sistema-almacen-unea",
+      "children": [
+        "c:\\Users\\nahat\\Desktop\\Sistema-Almacen-Unea\\sistema-almacen-unea\\public\\unealogo.svg",
+        "c:\\Users\\nahat\\Desktop\\Sistema-Almacen-Unea\\sistema-almacen-unea\\public\\vite.svg"
+      ]
+    },
+    {
+      "path": "c:\\Users\\nahat\\Desktop\\Sistema-Almacen-Unea\\sistema-almacen-unea\\target",
+      "name": "target",
+      "type": "folder",
+      "workspaceFolder": "c:\\Users\\nahat\\Desktop\\Sistema-Almacen-Unea\\sistema-almacen-unea",
+      "children": [
+        "c:\\Users\\nahat\\Desktop\\Sistema-Almacen-Unea\\sistema-almacen-unea\\target\\rust-analyzer",
+        "c:\\Users\\nahat\\Desktop\\Sistema-Almacen-Unea\\sistema-almacen-unea\\target\\rust-analyzer\\flycheck0",
+        "c:\\Users\\nahat\\Desktop\\Sistema-Almacen-Unea\\sistema-almacen-unea\\target\\rust-analyzer\\flycheck0\\stderr",
+        "c:\\Users\\nahat\\Desktop\\Sistema-Almacen-Unea\\sistema-almacen-unea\\target\\rust-analyzer\\flycheck0\\stdout"
+      ]
+    },
+    {
+      "path": "c:\\Users\\nahat\\Desktop\\Sistema-Almacen-Unea\\sistema-almacen-unea\\tests",
+      "name": "tests",
+      "type": "folder",
+      "workspaceFolder": "c:\\Users\\nahat\\Desktop\\Sistema-Almacen-Unea\\sistema-almacen-unea",
+      "children": [
+        "c:\\Users\\nahat\\Desktop\\Sistema-Almacen-Unea\\sistema-almacen-unea\\tests\\tableCreation.test.js"
+      ]
+    },
+    {
+      "path": "c:\\Users\\nahat\\Desktop\\Sistema-Almacen-Unea\\sistema-almacen-unea\\.kilocodemodes",
+      "name": ".kilocodemodes",
+      "type": "file",
+      "workspaceFolder": "c:\\Users\\nahat\\Desktop\\Sistema-Almacen-Unea\\sistema-almacen-unea"
+    },
+    {
+      "path": "c:\\Users\\nahat\\Desktop\\Sistema-Almacen-Unea\\sistema-almacen-unea\\.hidden-items.json",
+      "name": ".hidden-items.json",
+      "type": "file",
+      "workspaceFolder": "c:\\Users\\nahat\\Desktop\\Sistema-Almacen-Unea\\sistema-almacen-unea"
+    }
+  ]
 }

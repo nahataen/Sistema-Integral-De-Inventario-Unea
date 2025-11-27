@@ -33,5 +33,13 @@ dirs = "5.0.0"
 # Codificación base64 para imágenes
 base64 = "0.21"
 
+# Generación de PDFs
+
+# Imagenes a pdf
+image = "0.24"   # dependencia que inserta imagenes en los pdf y o manipulacion de las mismas
+genpdf = "0.2"
+typst = "0.12"
+typst-render = "0.12"
+
 [features]
 custom-protocol = ["tauri/custom-protocol"]
