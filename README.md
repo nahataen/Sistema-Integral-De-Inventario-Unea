@@ -31,32 +31,6 @@ El sistema permite administrar múltiples bases de datos de inventario de manera
 
 ---
 
-## 🐳 Configuración con Docker
-
-Para migrar tu entorno de desarrollo a otra computadora o asegurar consistencia, puedes usar Docker.
-
-### Prerrequisitos
-- [Docker](https://www.docker.com/get-started) instalado en tu sistema.
-- [Docker Compose](https://docs.docker.com/compose/install/) (generalmente incluido con Docker Desktop).
-
-### Configuración
-1. Clona el repositorio en la nueva computadora.
-2. Asegúrate de tener Docker corriendo.
-3. Ejecuta el siguiente comando para construir y ejecutar el contenedor de desarrollo:
-
-```bash
-docker-compose up --build
-```
-
-Esto iniciará el servidor de desarrollo en `http://localhost:3000`.
-
-### Notas importantes
-- El contenedor incluye Node.js 18, Rust 1.65+ y todas las dependencias de Tauri.
-- Los cambios en el código se reflejan automáticamente gracias a los volúmenes montados.
-- Para construir la aplicación nativa, necesitarás ejecutar `npm run tauri build` en tu host (fuera del contenedor), ya que requiere acceso al sistema operativo nativo.
-
----
-
 ##  Estructura del proyecto
 
 ```bash
