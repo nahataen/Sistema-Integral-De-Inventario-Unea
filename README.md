@@ -44,6 +44,4 @@ El sistema permite administrar múltiples bases de datos de inventario de manera
 ├── tauri/                # Configuración del backend de Tauri
 ├── index.html            # Archivo HTML principal
 ├── package.json          # Dependencias del frontend
-├── Dockerfile            # Configuración de Docker
-├── docker-compose.yml    # Configuración de Docker Compose
 └── vite.config.ts        # Configuración de Vite
