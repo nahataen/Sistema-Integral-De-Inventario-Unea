@@ -1,47 +1,69 @@
-# Sistema de Almacén UNEA
+# 📦 Sistema integral de inventario UNEA — TypeScript
 
-![UNEA Logo](https://www.unea.edu.mx/hubfs/Flujo%20Ingenier%C3%ADa%20Industrial%202022%20Marzo/Logos%20Marcas/logos%202024/unea.svg)
+> App de escritorio (Tauri + React + Vite + SQLite) para administrar inventarios locales de la UNEA sin depender de internet.
 
+## Stack
 
-Aplicación **multiplataforma** (Windows y macOS) desarrollada con **Tauri**, **React**, **Vite**, **TailwindCSS** y **SQLite**.
-El sistema permite administrar múltiples bases de datos de inventario de manera local, sin depender de internet a requerimientos de la institución.
+Real, según `package.json` y `src-tauri/Cargo.toml`:
 
----
+- Frontend: React 19 + React DOM + react-router-dom 7 + Vite 7 + TypeScript 5.8
+- Escritorio: Tauri 1.5 (Rust 2021, `tauri-build 1.5.6`)
+- Backend Tauri (Rust): `rusqlite` (bundled), `serde`/`serde_json`, `chrono`, `dirs`, `base64`, `image`, `genpdf`, `typst`/`typst-render`
+- UI/Globales: `jspdf`, `react-hot-toast`, `react-icons`, CSS propio (`src/styles/`, `src/App.css`)
+- Dev: ESLint 9, Jest 30, Puppeteer, `@vitejs/plugin-react`
+- Datos: SQLite local (vía backend Tauri, rutas con `@tauri-apps/api/path`)
+- Nota honesta: el README anterior mencionaba TailwindCSS, pero no está en `dependencies`/`devDependencies`; los estilos son CSS propios.
 
-## 🚀 Características principales
+## Estructura
 
-- 🔍 **Gestión de bases de datos SQLite**: importar, exportar, eliminar y listar.
-- 🎨 **Modo oscuro/claro** con persistencia en `localStorage`.
-- 📂 **Compatibilidad multiplataforma** gracias a `@tauri-apps/api/path` (`appDir`) para rutas dinámicas seguras.
-- 🔑 **Protección al eliminar bases de datos** con confirmación y contraseña.
-- ⚡ **Desarrollo rápido** con **Vite** como bundler.
-- 📊 **Interfaz moderna** con **React + TailwindCSS**.
-- 🖥️ **Optimizado para escritorio** con **Tauri** (menor consumo de recursos que Electron).
+Árbol real (resumido, sin `.git`/`node_modules`/`target`):
 
----
+```text
+index.html
+package.json
+vite.config.ts (puerto 3000, chunks vendor/tauri)
+eslint.config.js
+src/
+  main.tsx (StrictMode + BrowserRouter)
+  App.tsx (8 rutas lazy: /, /configuracion, /pagina, /about, /hub_tablas, /editar_fila, /create-record, /detalles-consultas)
+  components/layout/Header.tsx, Sidebar.tsx
+  components/ui/DatabaseTable.tsx, TableCard.tsx, CreateTableModal.tsx, ImportarExportar.tsx, TablaSegura.tsx, ActionButton.tsx
+  pages/dashboard/DatabaseDashboard.tsx
+  pages/database/hub_tablas.tsx, pagina.tsx, editar_fila.tsx
+  pages/create-record/CreateRecordPage.tsx
+  pages/pagina-detalles/detalles-consultas.tsx
+  pages/settings/Configuracion.tsx
+  pages/home/Home.tsx, about.tsx
+  context/TableCreationContext.tsx, ThemeContext.tsx
+  services/api/index.ts, services/database/index.ts
+  utils/index.ts, utils/pdfGenerator.ts
+  types/index.ts, styles/, hooks/, assets/
+src-tauri/
+  Cargo.toml, build.rs, tauri.conf.json, icons/
+docs/hub_tablas.md
+directrices de codigo/ (*.md de arquitectura, despliegue, pruebas, etc.)
+public/unealogo.svg
+```
 
-## 🛠️ Tecnologías utilizadas
-
-- [Tauri](https://tauri.app/) → empaquetado multiplataforma.
-- [React](https://react.dev/) → interfaz de usuario.
-- [Vite](https://vitejs.dev/) → bundler y servidor de desarrollo ultrarrápido.
-- [TailwindCSS](https://tailwindcss.com/) → estilos rápidos y modernos.
-- [SQLite](https://www.sqlite.org/) → almacenamiento local de datos.
-- [TypeScript](https://www.typescriptlang.org/) → tipado seguro y mantenimiento.
-
----
-
-##  Estructura del proyecto
+## Cómo correr
 
 ```bash
-├── src/
-│   ├── components/       # Componentes de React
-│   ├── pages/            # Vistas principales
-│   ├── utils/            # Funciones auxiliares
-│   ├── App.tsx           # Punto de entrada de la interfaz
-│   └── main.tsx          # Configuración inicial
-├── public/               # Archivos estáticos
-├── tauri/                # Configuración del backend de Tauri
-├── index.html            # Archivo HTML principal
-├── package.json          # Dependencias del frontend
-└── vite.config.ts        # Configuración de Vite
+npm install
+npm run dev      # Vite en http://localhost:3000
+npm run build    # tsc -b && vite build
+npm run preview  # previsualizar build
+npm run lint     # eslint .
+```
+
+App de escritorio (requiere toolchain Rust + Tauri CLI):
+
+```bash
+npx tauri dev    # modo desarrollo escritorio
+npx tauri build  # empaquetado Windows/macOS
+```
+
+## Estado/Notas
+
+- Proyecto académico/funcional en desarrollo: dashboard, hub de tablas, crear/editar registros, importar/exportar SQLite, modo oscuro/claro, generación de PDF.
+- Sin `Dockerfile`/`docker-compose` en el repo (se eliminaron según historial).
+- La persistencia es local (SQLite); no hay backend remoto.
